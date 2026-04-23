@@ -26,6 +26,7 @@ export interface EnemyData {
   speed: number; // 현재 이동 속도 (디버프 적용됨)
   pathIndex: number; // 현재 위치한 경로(pathTiles)의 인덱스
   progress: number; // 0.0 ~ 1.0 (현재 타일과 다음 타일 사이의 진행도)
+  selectedPathIndex?: number; // 멀티 패스일 때 이 적이 사용할 경로 번호
   isSlowed?: boolean;
   slowTimer?: number;
 }
@@ -46,10 +47,6 @@ function tileKey(r: number, c: number) {
 export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffects = [], onSelectCell }: GridMapProps) {
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
-  const pathSet = new Set(stage.pathTiles.map(([r, c]) => tileKey(r, c)));
-  const startSet = new Set(stage.startTiles.map(([r, c]) => tileKey(r, c)));
-  const goalKey = tileKey(stage.goalTile[0], stage.goalTile[1]);
-
   const handleLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
     setContainerSize({ width, height });
@@ -66,6 +63,15 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
       Math.min(availableWidth / stage.cols, availableHeight / stage.rows)
     );
   }
+
+  // 화면을 그릴 때 필요한 전체 path 타일과 start 타일 Set
+  const allPathTiles = stage.paths ? stage.paths.flat() : stage.pathTiles;
+  const pathSet = new Set(allPathTiles.map(([r, c]) => tileKey(r, c)));
+  
+  const allStartTiles = stage.multiStartTiles ? stage.multiStartTiles : stage.startTiles;
+  const startSet = new Set(allStartTiles.map(([r, c]) => tileKey(r, c)));
+  
+  const goalKey = tileKey(stage.goalTile[0], stage.goalTile[1]);
 
   return (
     <View
@@ -131,8 +137,9 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
 
           {/* 적군 렌더링 */}
           {enemies.map((enemy) => {
-            const currentTile = stage.pathTiles[enemy.pathIndex];
-            const nextTile = stage.pathTiles[enemy.pathIndex + 1];
+            const ePath = (stage.paths && enemy.selectedPathIndex !== undefined) ? stage.paths[enemy.selectedPathIndex] : stage.pathTiles;
+            const currentTile = ePath[enemy.pathIndex];
+            const nextTile = ePath[enemy.pathIndex + 1];
             if (!currentTile) return null;
 
             // 목적지에 도착한 상태라면 현재 타일에 고정
