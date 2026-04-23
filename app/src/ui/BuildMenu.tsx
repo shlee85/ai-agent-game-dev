@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { TOWER_CONFIG } from "../data/towers";
 
 interface BuildMenuProps {
@@ -31,9 +32,12 @@ export function BuildMenu({ gold, onBuild, onClose }: BuildMenuProps) {
               >
                 <View style={{ backgroundColor: tower.color }} className="w-8 h-8 mb-2 rounded-full border border-slate-500" />
                 <Text className="text-xs font-semibold text-slate-300 text-center" numberOfLines={1}>{tower.name}</Text>
-                <Text className={`text-xs font-bold mt-1 ${canAfford ? "text-yellow-400" : "text-red-400"}`}>
-                  {tower.cost}G
-                </Text>
+                <View className="flex-row items-center mt-1">
+                  <FontAwesome5 name="coins" size={8} color={canAfford ? "#FBBF24" : "#F87171"} className="mr-1" />
+                  <Text className={`text-xs font-bold ${canAfford ? "text-yellow-400" : "text-red-400"}`}>
+                    {tower.cost}
+                  </Text>
+                </View>
               </Pressable>
             );
           })}

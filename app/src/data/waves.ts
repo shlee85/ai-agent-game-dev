@@ -1,4 +1,4 @@
-export type EnemyType = "runner" | "guard";
+import { EnemyType } from "./enemies";
 
 export interface WaveConfig {
   id: 1 | 2 | 3;

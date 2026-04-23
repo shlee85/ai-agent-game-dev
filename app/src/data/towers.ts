@@ -6,6 +6,7 @@ export interface TowerStats {
   baseDamage: number;
   baseRange: number; // 반경 (타일 단위)
   baseCooldown: number; // 초 단위
+  upgradeCost: number; // 업그레이드 비용
   attackType: "single" | "aoe" | "slow";
   slowMultiplier?: number; // 0.5면 50% 감속
   slowDuration?: number; // 초 단위
@@ -21,6 +22,7 @@ export const TOWER_CONFIG: Record<string, TowerStats> = {
     baseDamage: 45,
     baseRange: 3.5,
     baseCooldown: 1.2,
+    upgradeCost: 180,
     attackType: "single",
   },
   aoe: {
@@ -31,6 +33,7 @@ export const TOWER_CONFIG: Record<string, TowerStats> = {
     baseDamage: 15,
     baseRange: 2.5,
     baseCooldown: 1.5,
+    upgradeCost: 240,
     attackType: "aoe",
     aoeRadius: 1.5,
   },
@@ -42,6 +45,7 @@ export const TOWER_CONFIG: Record<string, TowerStats> = {
     baseDamage: 5,
     baseRange: 2.5,
     baseCooldown: 1.0,
+    upgradeCost: 210,
     attackType: "slow",
     slowMultiplier: 0.5,
     slowDuration: 2.0,

@@ -4,6 +4,7 @@ export interface DifficultyConfig {
   id: Difficulty;
   startGold: number;
   startHeart: number;
+  startDiamond: number;
   enemyHpMultiplier: number;
   enemySpeedMultiplier: number;
   killGoldMultiplier: number;
@@ -16,6 +17,7 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
     id: "easy",
     startGold: 360,
     startHeart: 10,
+    startDiamond: 30, // 베타 기간 테스트 넉넉히
     enemyHpMultiplier: 0.85,
     enemySpeedMultiplier: 1.0,
     killGoldMultiplier: 1.15,
@@ -26,6 +28,7 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
     id: "normal",
     startGold: 360,
     startHeart: 10,
+    startDiamond: 20,
     enemyHpMultiplier: 1.0,
     enemySpeedMultiplier: 1.0,
     killGoldMultiplier: 1.15,
@@ -36,6 +39,7 @@ export const DIFFICULTY_CONFIG: Record<Difficulty, DifficultyConfig> = {
     id: "hard",
     startGold: 360,
     startHeart: 10,
+    startDiamond: 10,
     enemyHpMultiplier: 1.2,
     enemySpeedMultiplier: 1.0,
     killGoldMultiplier: 1.15,

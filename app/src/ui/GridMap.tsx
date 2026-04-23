@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, LayoutChangeEvent, Pressable } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, LayoutChangeEvent, Pressable, Text, Animated } from "react-native";
 
 import { StageConfig } from "../data/stages";
 
@@ -17,6 +17,14 @@ export interface AttackEffect {
   size: number;
 }
 
+export interface FloatingTextData {
+  id: string;
+  row: number;
+  col: number;
+  text: string;
+  color: string;
+}
+
 export interface EnemyData {
   id: string;
   type: string;
@@ -29,6 +37,10 @@ export interface EnemyData {
   selectedPathIndex?: number; // 멀티 패스일 때 이 적이 사용할 경로 번호
   isSlowed?: boolean;
   slowTimer?: number;
+  hitTimer?: number; // 피격 플래시 타이머
+  color?: string; // 적의 색상 (에셋 교체 전 임시)
+  size?: number; // 적의 렌더링 크기 비율
+  killReward?: number; // 처치 시 획득 골드
 }
 
 interface GridMapProps {
@@ -37,6 +49,9 @@ interface GridMapProps {
   towers: Record<string, TowerData>;
   enemies?: EnemyData[];
   attackEffects?: AttackEffect[];
+  floatingTexts?: FloatingTextData[];
+  rangeDisplay?: { row: number; col: number; radius: number } | null;
+  flashColor?: string | null;
   onSelectCell: (row: number, col: number) => void;
 }
 
@@ -44,7 +59,51 @@ function tileKey(r: number, c: number) {
   return `${r},${c}`;
 }
 
-export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffects = [], onSelectCell }: GridMapProps) {
+// 플로팅 텍스트 애니메이션 처리를 위한 개별 컴포넌트
+function FloatingTextItem({ data, tileSize }: { data: FloatingTextData; tileSize: number }) {
+  const [animValue] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(animValue, {
+      toValue: 1,
+      duration: 800, // 0.8초 동안 위로 떠오르며 페이드아웃
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const translateY = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -30], // 30픽셀 위로 이동
+  });
+
+  const opacity = animValue.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [1, 1, 0], // 절반까지 보이다가 서서히 투명
+  });
+
+  return (
+    <Animated.View
+      style={{
+        position: "absolute",
+        top: data.row * tileSize - 10,
+        left: data.col * tileSize,
+        width: tileSize,
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 50,
+        pointerEvents: "none",
+        transform: [{ translateY }],
+        opacity,
+      }}
+    >
+      <Text style={{ color: data.color, fontWeight: "900", fontSize: 14, textShadowColor: "rgba(0,0,0,0.8)", textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 2 }}>
+        {data.text}
+      </Text>
+    </Animated.View>
+  );
+}
+
+export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffects = [], floatingTexts = [], rangeDisplay = null, flashColor = null, onSelectCell }: GridMapProps) {
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   const handleLayout = (e: LayoutChangeEvent) => {
@@ -75,7 +134,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
 
   return (
     <View
-      className="flex-1 items-center justify-center rounded-xl border border-slate-700 bg-slate-900 p-2"
+      className="flex-1 items-center justify-center rounded-xl border border-slate-700/50 bg-slate-900/40 p-2"
       onLayout={handleLayout}
     >
       {tileSize > 0 && (
@@ -94,10 +153,10 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                 const isPath = pathSet.has(key);
                 const tower = towers[key];
                 
-                let bg = "#111827"; // 기본 (배치 가능 셀)
-                if (isStart) bg = "#22C55E"; // 시작
-                else if (isGoal) bg = "#EF4444"; // 목표
-                else if (isPath) bg = "#475569"; // 길
+                let bg = "rgba(17, 24, 39, 0.4)"; // 기본 (배치 가능 셀)
+                if (isStart) bg = "rgba(34, 197, 94, 0.6)"; // 시작
+                else if (isGoal) bg = "rgba(239, 68, 68, 0.6)"; // 목표
+                else if (isPath) bg = "rgba(71, 85, 105, 0.6)"; // 길
 
                 const isSelected = selectedCell?.row === row && selectedCell?.col === col;
 
@@ -110,7 +169,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                       height: tileSize,
                       backgroundColor: bg,
                       borderWidth: isSelected ? 2 : 0.5,
-                      borderColor: isSelected ? "#FCD34D" : "#1E293B",
+                      borderColor: isSelected ? "#FCD34D" : "rgba(30, 41, 59, 0.5)",
                       zIndex: isSelected ? 10 : 1, // 선택된 셀이 위로 올라오도록 (테두리 겹침 방지)
                       alignItems: "center",
                       justifyContent: "center",
@@ -126,8 +185,16 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                           borderRadius: 999, // 둥글게 (임시 타워 그래픽)
                           borderWidth: 1.5,
                           borderColor: "#ffffff40",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
-                      />
+                      >
+                        {tower.level >= 2 && (
+                          <Text style={{ color: "white", fontWeight: "bold", fontSize: tileSize * 0.35 }}>
+                            U
+                          </Text>
+                        )}
+                      </View>
                     )}
                   </Pressable>
                 );
@@ -149,6 +216,8 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
             const row = currentTile[0] + (targetTile[0] - currentTile[0]) * enemy.progress;
             const col = currentTile[1] + (targetTile[1] - currentTile[1]) * enemy.progress;
 
+            const isHit = enemy.hitTimer && enemy.hitTimer > 0;
+
             return (
               <View
                 key={enemy.id}
@@ -166,22 +235,89 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
               >
                 <View
                   style={{
-                    width: tileSize * 0.6,
-                    height: tileSize * 0.6,
-                    backgroundColor: enemy.isSlowed ? "#3B82F6" : "#EF4444", // 감속 시 파란색
+                    width: tileSize * (enemy.size || 0.6),
+                    height: tileSize * (enemy.size || 0.6),
+                    backgroundColor: isHit ? "#FFFFFF" : enemy.isSlowed ? "#3B82F6" : (enemy.color || "#EF4444"), // 피격 시 흰색 번쩍임
                     borderRadius: 6,
                     borderWidth: 2,
-                    borderColor: enemy.isSlowed ? "#1D4ED8" : "#7F1D1D",
+                    borderColor: isHit ? "#FFFFFF" : enemy.isSlowed ? "#1D4ED8" : "#7F1D1D",
+                    alignItems: "center",
+                    justifyContent: "center",
                   }}
                 >
                   {/* HP Bar */}
                   <View style={{ position: "absolute", top: -8, width: "100%", height: 4, backgroundColor: "#000" }}>
                     <View style={{ width: `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%`, height: "100%", backgroundColor: "#22C55E" }} />
                   </View>
+                  {/* 숫자 체력 표시 (테스트용) */}
+                  <Text style={{ color: "white", fontSize: 8, fontWeight: "bold" }}>
+                    {Math.floor(enemy.hp)}
+                  </Text>
                 </View>
               </View>
             );
           })}
+
+          {/* 공격 이펙트 렌더링 */}
+          {attackEffects.map((effect) => (
+            <View
+              key={effect.id}
+              style={{
+                position: "absolute",
+                top: effect.row * tileSize + tileSize / 2 - effect.size / 2,
+                left: effect.col * tileSize + tileSize / 2 - effect.size / 2,
+                width: effect.size,
+                height: effect.size,
+                backgroundColor: effect.color,
+                borderRadius: 999,
+                opacity: 0.6,
+                zIndex: 30,
+                pointerEvents: "none",
+              }}
+            />
+          ))}
+
+          {/* 플로팅 텍스트 렌더링 */}
+          {floatingTexts.map((txt) => (
+            <FloatingTextItem key={txt.id} data={txt} tileSize={tileSize} />
+          ))}
+
+          {/* 사거리 표시 렌더링 (홀로그램 레이더 스타일) */}
+          {rangeDisplay && (
+            <View
+              style={{
+                position: "absolute",
+                top: (rangeDisplay.row - rangeDisplay.radius + 0.5) * tileSize,
+                left: (rangeDisplay.col - rangeDisplay.radius + 0.5) * tileSize,
+                width: rangeDisplay.radius * 2 * tileSize,
+                height: rangeDisplay.radius * 2 * tileSize,
+                borderRadius: 9999,
+                backgroundColor: "rgba(6, 182, 212, 0.08)", // Cyan 500
+                borderWidth: 1.5,
+                borderColor: "rgba(6, 182, 212, 0.6)",
+                borderStyle: "dashed", // 레이더 느낌의 점선
+                zIndex: 5, // 타워보다는 아래, 배경보다는 위
+                pointerEvents: "none",
+              }}
+            />
+          )}
+
+          {/* 글로벌 이펙트 플래시 */}
+          {flashColor && (
+            <View
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: stage.cols * tileSize,
+                height: stage.rows * tileSize,
+                backgroundColor: flashColor,
+                opacity: 0.3,
+                zIndex: 40,
+                pointerEvents: "none",
+              }}
+            />
+          )}
         </View>
       )}
     </View>

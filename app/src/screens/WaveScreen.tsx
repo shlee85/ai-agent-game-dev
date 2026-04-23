@@ -1,30 +1,38 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Pressable, Text, TouchableOpacity } from "react-native";
+import { View, Pressable, Text, TouchableOpacity, Animated, ImageBackground } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { DIFFICULTY_CONFIG } from "../data/difficulty";
+import { DIFFICULTY_CONFIG, Difficulty } from "../data/difficulty";
 import { STAGE_CONFIG } from "../data/stages";
 import { WAVE_CONFIG } from "../data/waves";
 import { TOWER_CONFIG } from "../data/towers";
-import { GridMap, EnemyData, AttackEffect } from "../ui/GridMap";
+import { ENEMY_CONFIG, EnemyType } from "../data/enemies";
+import { ITEM_CONFIG, ItemStats } from "../data/items";
+import { GridMap, EnemyData, AttackEffect, FloatingTextData } from "../ui/GridMap";
 import { HUD } from "../ui/HUD";
 import { BuildMenu, TOWER_OPTIONS } from "../ui/BuildMenu";
+import { TowerMenu } from "../ui/TowerMenu";
+import { ItemShop } from "../ui/ItemShop";
 
 type GameState = "playing" | "game_over" | "wave_clear" | "paused";
 
-export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }: { waveId: 1 | 2 | 3, onBackToLobby: () => void, onNextWave: () => void, onRestartWave: () => void }) {
-  const difficulty = DIFFICULTY_CONFIG.normal;
+export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave, onRestartWave }: { waveId: 1 | 2 | 3, difficultyLevel: Difficulty, onBackToLobby: () => void, onNextWave: () => void, onRestartWave: () => void }) {
+  const difficulty = DIFFICULTY_CONFIG[difficultyLevel || "normal"];
   const wave = WAVE_CONFIG[waveId];
   const stage = STAGE_CONFIG[waveId];
 
   const [gameState, setGameState] = useState<GameState>("playing");
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
   const [gold, setGold] = useState(difficulty.startGold);
+  const [diamond, setDiamond] = useState(difficulty.startDiamond);
   const [heart, setHeart] = useState(difficulty.startHeart);
   const [towers, setTowers] = useState<Record<string, any>>({});
   const [enemies, setEnemies] = useState<EnemyData[]>([]);
   const [attackEffects, setAttackEffects] = useState<AttackEffect[]>([]);
+  const [floatingTexts, setFloatingTexts] = useState<FloatingTextData[]>([]);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
+  const [activeItem, setActiveItem] = useState<ItemStats | null>(null);
+  const [flashColor, setFlashColor] = useState<string | null>(null); // 글로벌 이펙트용
 
   // Game Loop Refs
   const lastTimeRef = useRef(Date.now());
@@ -43,6 +51,22 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
   useEffect(() => {
     gameStateRef.current = gameState;
   }, [gameState]);
+
+  // 팝업 애니메이션 처리용
+  const popupAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (gameState === "game_over" || gameState === "wave_clear" || gameState === "paused") {
+      Animated.spring(popupAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 40,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      popupAnim.setValue(0);
+    }
+  }, [gameState, popupAnim]);
 
   // 웨이브 클리어 시 로컬 스토리지에 진행 상황 저장
   useEffect(() => {
@@ -77,19 +101,34 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
       }
 
       // 1. 적군 스폰 로직
-      if (spawnCountRef.current < wave.totalSpawnCount) {
+      const maxSpawnCount = Math.floor(wave.totalSpawnCount * difficulty.spawnCountMultiplier);
+      if (spawnCountRef.current < maxSpawnCount) {
         spawnTimerRef.current += dt;
         if (spawnTimerRef.current >= wave.spawnIntervalSec) {
           spawnTimerRef.current -= wave.spawnIntervalSec;
           spawnCountRef.current += 1;
           
+          // 난이도에 따른 적 종류 제한(enemyTypeLimit) 반영하여 스폰할 적 후보 필터링
+          const availableEnemies = wave.enemies.slice(0, difficulty.enemyTypeLimit);
+          
+          // 가중치(weight) 기반 랜덤 선택 로직
+          const totalWeight = availableEnemies.reduce((acc, curr) => acc + curr.weight, 0);
+          let randomWeight = Math.random() * totalWeight;
+          let selectedEnemyType = availableEnemies[0].type;
+          
+          for (const enemyDef of availableEnemies) {
+            randomWeight -= enemyDef.weight;
+            if (randomWeight <= 0) {
+              selectedEnemyType = enemyDef.type;
+              break;
+            }
+          }
+          
+          const enemyStats = ENEMY_CONFIG[selectedEnemyType];
+          
           // 멀티 패스 지원: stage.paths가 존재하면 그 중에서 랜덤(또는 비율별)으로 경로 선택
-          // 여기서는 간단하게 비율로 분배 (예: 홀수번째는 pathA, 짝수번째는 pathB 등, 혹은 배열 길이로 모듈러 연산)
           let selectedPathIndex = 0;
           if (stage.paths && stage.paths.length > 1) {
-            // wave3 같은 경우 paths 배열의 길이만큼 골고루 분배
-            // (예: 100마리라면 1번 경로는 짝수번째, 2번 경로는 홀수번째 등으로 간단히 분배)
-            // 기획에서 "한쪽 30마리, 한쪽 70마리" 같은 세부 비율이 있다면 Math.random() 사용
             if (waveId === 3) {
               // 3:7 비율로 왼쪽/오른쪽 입구 결정
               selectedPathIndex = Math.random() < 0.3 ? 0 : 1;
@@ -98,16 +137,23 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
             }
           }
 
+          // 난이도 배율 적용
+          const maxHp = Math.floor(enemyStats.baseHp * difficulty.enemyHpMultiplier);
+          const killReward = Math.floor(enemyStats.killReward * difficulty.killGoldMultiplier);
+
           const newEnemy: EnemyData = {
             id: `enemy-${Date.now()}-${spawnCountRef.current}`,
-            type: "basic",
-            hp: 100,
-            maxHp: 100,
-            baseSpeed: 1.5,
-            speed: 1.5, // 초당 1.5칸 이동
+            type: enemyStats.id,
+            hp: maxHp,
+            maxHp: maxHp,
+            baseSpeed: enemyStats.baseSpeed * difficulty.enemySpeedMultiplier,
+            speed: enemyStats.baseSpeed * difficulty.enemySpeedMultiplier,
             pathIndex: 0,
             progress: 0,
-            selectedPathIndex: selectedPathIndex, // 선택된 경로 인덱스 저장
+            selectedPathIndex: selectedPathIndex,
+            color: enemyStats.color,
+            size: enemyStats.size,
+            killReward: killReward,
           };
           setEnemies((prev) => [...prev, newEnemy]);
         }
@@ -120,7 +166,7 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
         let newGoldEarned = 0;
         let heartsLost = 0;
 
-        // 2-1. 적군 상태 이상(Slow 등) 타이머 차감
+        // 2-1. 적군 상태 이상(Slow, Hit 등) 타이머 차감
         currentEnemies.forEach((e: EnemyData) => {
           if (e.isSlowed && e.slowTimer && e.slowTimer > 0) {
             e.slowTimer -= dt;
@@ -129,6 +175,9 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
               e.slowTimer = 0;
               e.speed = e.baseSpeed; // 원래 속도로 복귀
             }
+          }
+          if (e.hitTimer && e.hitTimer > 0) {
+            e.hitTimer -= dt;
           }
         });
 
@@ -206,8 +255,10 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
             // 타입별 데미지/효과 적용
             if (towerStats.attackType === "single") {
               t.hp -= actualDamage;
+              t.hitTimer = 0.1;
             } else if (towerStats.attackType === "slow") {
               t.hp -= actualDamage;
+              t.hitTimer = 0.1;
               t.isSlowed = true;
               t.slowTimer = towerStats.slowDuration;
               t.speed = t.baseSpeed * (towerStats.slowMultiplier || 0.5);
@@ -227,6 +278,7 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
                 const dist = Math.sqrt(Math.pow(eRow - aRow, 2) + Math.pow(eCol - aCol, 2));
                 if (dist <= radius) {
                   aoeTarget.hp -= actualDamage;
+                  aoeTarget.hitTimer = 0.1;
                 }
               });
             }
@@ -242,13 +294,38 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
         }
 
         // 2-4. 체력이 다 닳은 적 제거 및 골드 획득
+        const textsToDraw: FloatingTextData[] = [];
         const aliveEnemies = currentEnemies.filter(e => {
           if (e.hp <= 0) {
-            newGoldEarned += 10; // 처치 당 10골드 획득 (나중에 난이도 배율 적용 가능)
+            const reward = e.killReward || 10;
+            newGoldEarned += reward; // 적 개별 처치 골드
+            
+            // 플로팅 텍스트 추가
+            const ePath = (stage.paths && e.selectedPathIndex !== undefined) ? stage.paths[e.selectedPathIndex] : stage.pathTiles;
+            const cTile = ePath[e.pathIndex];
+            const nTile = ePath[e.pathIndex + 1];
+            const tTile = nTile || cTile;
+            const eRow = cTile[0] + (tTile[0] - cTile[0]) * e.progress;
+            const eCol = cTile[1] + (tTile[1] - cTile[1]) * e.progress;
+            
+            textsToDraw.push({
+              id: `txt-${Date.now()}-${Math.random()}`,
+              row: eRow,
+              col: eCol,
+              text: `+${reward}`,
+              color: "#FCD34D", // yellow-300
+            });
             return false;
           }
           return true;
         });
+
+        if (textsToDraw.length > 0) {
+          setFloatingTexts((prev) => [...prev, ...textsToDraw]);
+          setTimeout(() => {
+            setFloatingTexts((prev) => prev.filter(p => !textsToDraw.find(t => t.id === p.id)));
+          }, 800); // 0.8초 뒤 삭제
+        }
 
         if (newGoldEarned > 0) {
           setGold((prev) => prev + newGoldEarned);
@@ -284,8 +361,9 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
         }
 
         // 2-6. 웨이브 클리어 판정
+        const maxSpawnCountForClear = Math.floor(wave.totalSpawnCount * difficulty.spawnCountMultiplier);
         if (
-          spawnCountRef.current >= wave.totalSpawnCount &&
+          spawnCountRef.current >= maxSpawnCountForClear &&
           nextEnemies.length === 0 &&
           gameStateRef.current === "playing"
         ) {
@@ -315,8 +393,112 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
   
   const goalKey = tileKey(stage.goalTile[0], stage.goalTile[1]);
 
+  const handleUseItem = (item: ItemStats) => {
+    if (activeItem?.id === item.id) {
+      // 이미 선택된 아이템을 다시 누르면 취소
+      setActiveItem(null);
+      setSelectedCell(null);
+      return;
+    }
+
+    if (diamond < item.cost) return;
+
+    if (item.type === "targeted_aoe") {
+      setActiveItem(item);
+      setSelectedCell(null); // 새로운 타겟팅 시작
+    } else {
+      // 즉시 발동형 스킬 처리
+      setDiamond((prev) => prev - item.cost);
+      
+      // 시각적 피드백 (플래시)
+      setFlashColor(item.color);
+      setTimeout(() => setFlashColor(null), 300);
+
+      // 적군 상태 일괄 변경
+      setEnemies((prevEnemies) => {
+        let newEnemies = [...prevEnemies];
+        
+        if (item.type === "global_aoe") {
+          newEnemies = newEnemies.map((e) => ({
+            ...e,
+            hp: e.hp - item.damage,
+            hitTimer: 0.1,
+          }));
+        } else if (item.type === "global_freeze") {
+          newEnemies = newEnemies.map((e) => ({
+            ...e,
+            hp: e.hp - item.damage,
+            hitTimer: 0.1,
+            isSlowed: true,
+            slowTimer: item.duration || 4.0,
+            speed: e.baseSpeed * 0.1, // 거의 멈춤 (0.1배속)
+          }));
+        }
+        
+        return newEnemies;
+      });
+    }
+  };
+
   const handleSelectCell = (row: number, col: number) => {
     const key = tileKey(row, col);
+
+    if (activeItem && activeItem.type === "targeted_aoe") {
+      // 타겟형 스킬 사용 로직
+      if (diamond < activeItem.cost) {
+        setActiveItem(null);
+        return;
+      }
+      
+      setDiamond((prev) => prev - activeItem.cost);
+      
+      // 해당 타일 중앙 좌표 (픽셀 대신 타일 좌표계 기준)
+      const targetRow = row;
+      const targetCol = col;
+      const radius = activeItem.radius || 2.5;
+
+      // 이펙트 추가 (범위 폭발)
+      const effectId = `fx-item-${Date.now()}`;
+      setAttackEffects((prev) => [
+        ...prev,
+        {
+          id: effectId,
+          row: targetRow,
+          col: targetCol,
+          color: activeItem.color,
+          size: radius * 2 * 32, // 임시 크기 계산 (GridMap에서 타일 기반으로 사이즈 처리하면 더 좋음, 여기서는 크게)
+        }
+      ]);
+      setTimeout(() => {
+        setAttackEffects((prev) => prev.filter(e => e.id !== effectId));
+      }, 300);
+
+      // 적 데미지 처리
+      setEnemies((prevEnemies) => {
+        return prevEnemies.map((e) => {
+          if (e.hp <= 0) return e;
+          
+          const ePath = (stage.paths && e.selectedPathIndex !== undefined) ? stage.paths[e.selectedPathIndex] : stage.pathTiles;
+          const cTile = ePath[e.pathIndex];
+          const nTile = ePath[e.pathIndex + 1];
+          if (!cTile) return e;
+          const tTile = nTile || cTile;
+          
+          const eRow = cTile[0] + (tTile[0] - cTile[0]) * e.progress;
+          const eCol = cTile[1] + (tTile[1] - cTile[1]) * e.progress;
+
+          const dist = Math.sqrt(Math.pow(targetRow - eRow, 2) + Math.pow(targetCol - eCol, 2));
+          if (dist <= radius) {
+            return { ...e, hp: e.hp - activeItem.damage, hitTimer: 0.1 };
+          }
+          return e;
+        });
+      });
+
+      setActiveItem(null);
+      setSelectedCell(null);
+      return;
+    }
 
     // 예외 1: 길(Path), 시작점, 도착점 터치 시 선택 무시 및 메뉴 취소
     if (pathSet.has(key) || startSet.has(key) || goalKey === key) {
@@ -353,10 +535,54 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
   };
 
   const selectedKey = selectedCell ? tileKey(selectedCell.row, selectedCell.col) : null;
-  const showBuildMenu = selectedKey && !towers[selectedKey];
+  const existingTower = selectedKey ? towers[selectedKey] : null;
+  const showBuildMenu = selectedKey && !existingTower;
+  const showTowerMenu = selectedKey && existingTower;
+
+  let rangeDisplay = null;
+  if (selectedCell && existingTower) {
+    const stats = TOWER_CONFIG[existingTower.type];
+    if (stats) {
+      rangeDisplay = {
+        row: selectedCell.row,
+        col: selectedCell.col,
+        radius: stats.baseRange,
+      };
+    }
+  } else if (activeItem && activeItem.type === "targeted_aoe" && selectedCell) {
+    // 사실 타겟팅 중일때는 드래그 앤 드롭이거나 클릭 시 즉발이므로
+    // 클릭 전에 range를 띄우긴 어려움. 여기서는 로직만 유지.
+  }
+
+  const handleUpgradeTower = (cost: number) => {
+    if (!selectedKey || !existingTower || gold < cost) return;
+    setGold((prev) => prev - cost);
+    setTowers((prev) => ({
+      ...prev,
+      [selectedKey]: {
+        ...existingTower,
+        level: existingTower.level + 1,
+      },
+    }));
+  };
+
+  const handleSellTower = (refund: number) => {
+    if (!selectedKey || !existingTower) return;
+    setGold((prev) => prev + refund);
+    setTowers((prev) => {
+      const newTowers = { ...prev };
+      delete newTowers[selectedKey];
+      return newTowers;
+    });
+    setSelectedCell(null);
+  };
 
   return (
-    <View className="flex-1 bg-slate-900 relative">
+    <ImageBackground 
+      source={require('../../assets/bg.png')} 
+      className="flex-1 bg-slate-950 relative"
+      imageStyle={{ opacity: 0.4 }}
+    >
       {/* 맵 영역 (터치 시 선택 해제를 위해 Pressable로 감싸지만 GridMap 내의 터치는 방해하지 않음) */}
       <Pressable className="flex-1" onPress={() => setSelectedCell(null)}>
         <GridMap
@@ -365,7 +591,10 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
           towers={towers}
           enemies={enemies}
           attackEffects={attackEffects}
+          floatingTexts={floatingTexts}
           onSelectCell={handleSelectCell}
+          rangeDisplay={rangeDisplay}
+          flashColor={flashColor}
         />
       </Pressable>
 
@@ -377,12 +606,20 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
       >
         <HUD 
           gold={gold} 
+          diamond={diamond}
           heart={heart} 
           waveId={wave.id} 
           speedMultiplier={speedMultiplier}
           onToggleSpeed={() => setSpeedMultiplier(prev => (prev === 1 ? 2 : 1))}
         />
       </View>
+
+      {/* 스킬 상점 오버레이 */}
+      <ItemShop 
+        diamond={diamond} 
+        onUseItem={handleUseItem} 
+        activeItemType={activeItem?.id || null} 
+      />
 
       {/* 메뉴(일시정지) 버튼 */}
       <View 
@@ -409,10 +646,26 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
         </View>
       )}
 
+      {/* 하단 관리 메뉴 오버레이 */}
+      {showTowerMenu && existingTower && (
+        <View className="absolute bottom-4 w-full z-50" style={{ elevation: 50 }} pointerEvents="box-none">
+          <TowerMenu
+            towerData={existingTower}
+            gold={gold}
+            onUpgrade={handleUpgradeTower}
+            onSell={handleSellTower}
+            onClose={() => setSelectedCell(null)}
+          />
+        </View>
+      )}
+
       {/* 게임 오버 / 클리어 팝업 오버레이 */}
       {(gameState === "game_over" || gameState === "wave_clear") && (
         <View className="absolute inset-0 z-50 items-center justify-center bg-slate-950/80" style={{ elevation: 100 }}>
-          <View className="items-center rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl">
+          <Animated.View 
+            style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }], opacity: popupAnim }}
+            className="items-center rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl"
+          >
             <Text className={`text-4xl font-black ${gameState === "game_over" ? "text-red-500" : "text-emerald-400"}`}>
               {gameState === "game_over" ? "GAME OVER" : "WAVE CLEAR!"}
             </Text>
@@ -439,14 +692,17 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
             >
               <Text className="text-slate-200 font-bold text-lg text-center">로비로 돌아가기</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </View>
       )}
 
       {/* 일시정지(메뉴) 팝업 오버레이 */}
       {gameState === "paused" && (
         <View className="absolute inset-0 z-50 items-center justify-center bg-slate-950/80" style={{ elevation: 100 }}>
-          <View className="w-80 items-center rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl">
+          <Animated.View 
+            style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }], opacity: popupAnim }}
+            className="w-80 items-center rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl"
+          >
             <Text className="text-3xl font-black text-slate-200">일시 정지</Text>
             <Text className="mt-2 text-slate-400 text-sm">게임을 잠시 멈췄습니다.</Text>
             
@@ -470,9 +726,9 @@ export function WaveScreen({ waveId, onBackToLobby, onNextWave, onRestartWave }:
             >
               <Text className="text-slate-200 font-bold text-lg text-center">로비로 돌아가기</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         </View>
       )}
-    </View>
+    </ImageBackground>
   );
 }

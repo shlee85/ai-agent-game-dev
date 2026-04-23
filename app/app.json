@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "Sentinel Protocol",
+    "slug": "sentinel-protocol",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
