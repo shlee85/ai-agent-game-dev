@@ -37,7 +37,7 @@ export function LobbyScreen({ initialDifficulty, onSelectWave }: LobbyScreenProp
       imageStyle={{ opacity: 0.6 }} // 우주 배경이 너무 밝지 않게
     >
       <View className="absolute right-4 top-4 z-10 rounded-md border border-cyan-500/40 bg-slate-950/80 px-2 py-1">
-        <Text className="text-[10px] font-black tracking-wider text-cyan-400/90">beta1.0</Text>
+        <Text className="text-[10px] font-black tracking-wider text-cyan-400/90">beta2.0</Text>
       </View>
 
       {/* 타이틀 영역 */}
@@ -133,15 +133,15 @@ export function LobbyScreen({ initialDifficulty, onSelectWave }: LobbyScreenProp
               
               <View className="mt-4 flex-row items-center bg-slate-950/80 px-3 py-1 rounded-full border border-slate-800">
                 {!isUnlocked ? (
-                  <>
+                  <View className="flex-row items-center">
                     <Ionicons name="lock-closed" size={12} color="#475569" className="mr-1" />
                     <Text className="text-[10px] font-bold text-slate-500 tracking-widest">LOCKED</Text>
-                  </>
+                  </View>
                 ) : (
-                  <>
+                  <View className="flex-row items-center">
                     <Ionicons name="play" size={12} color="#22D3EE" className="mr-1" />
                     <Text className="text-[10px] font-bold text-cyan-400 tracking-widest">ENGAGE</Text>
-                  </>
+                  </View>
                 )}
               </View>
             </TouchableOpacity>

@@ -4,6 +4,38 @@
 
 ---
 
+## [Pending Commit] Beta 2.0 (2차): 적 유닛 스프라이트 적용
+- **Commit Message:** `feat: Beta 2.0 2차 적 유닛 스프라이트 렌더링 적용`
+
+### 상세 변경 사항 요약
+1. **적 유닛 스프라이트 에셋 추가**
+   - `app/assets/units/enemies/` 경로에 `enemy_runner.png`, `enemy_guard.png` 추가
+2. **적 에셋 매핑 데이터 신설**
+   - `app/src/data/enemyAssets.ts` 생성
+   - 적 `type`과 정적 `require()`를 1:1 매핑
+3. **GridMap 적 렌더링 교체**
+   - 기존 색상 박스 기반 렌더를 `Image` 스프라이트 렌더로 전환
+   - 피격/감속 상태는 오버레이 색상으로 가독성 유지
+
+---
+
+## [Pending Commit] Beta 2.0 (1차): 타워 캐릭터 UI 스프라이트 적용
+- **Commit Message:** `feat: Beta 2.0 1차 타워 스프라이트 렌더링 및 문서 스펙 반영`
+
+### 상세 변경 사항 요약
+1. **타워 스프라이트 에셋 추가**
+   - `app/assets/units/towers/` 경로에 `tower_sniper.png`, `tower_aoe.png`, `tower_slow.png` 추가
+2. **타워 에셋 매핑 데이터 신설**
+   - `app/src/data/towerAssets.ts` 생성
+   - 타워 `id`와 정적 `require()`를 1:1로 매핑
+3. **GridMap 타워 렌더링 교체**
+   - 기존 원형 `View` 기반 타워 표시를 `Image` 기반 스프라이트 렌더링으로 전환
+   - 업그레이드 배지(`U`)는 시인성 높은 오버레이 배지로 유지
+4. **Beta 2.0 문서 스펙 동기화**
+   - `GamePlan.md`, `Character.md`, `GraphicsPlan.md`에 캐릭터 UI 1차 스펙(해상도/포맷/우선순위) 반영
+
+---
+
 ## [Pending Commit] 4단계: UI/UX 및 이펙트 고도화 (3차 폴리싱 - 우주 테마 배경 및 아이콘 적용)
 - **Commit Message:** `feat: 게임 앱 아이콘 추가 및 로비/인게임 우주 배경 적용`
 

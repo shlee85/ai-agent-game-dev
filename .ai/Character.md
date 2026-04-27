@@ -71,3 +71,19 @@
 - 1차 목표: 캐릭터 간 "역할 차별화"가 명확해야 한다.
 - 2차 목표: 특정 캐릭터 1종으로 모든 웨이브 대응이 불가능해야 한다.
 - 3차 목표: 난이도 상승 시 조합의 중요도가 커지도록 설계한다.
+
+## 7) Beta 2.0 캐릭터 UI 적용 규격 (1차)
+- 적용 순서:
+  1) 아군 타워 3종 (Aegis Lance, Ember Nova, Frost Ward)
+  2) 적 유닛 2종 (Runner Drone, Guard Shell)
+- 1차 적용 범위: 정지 일러스트 기반 스프라이트(프레임 애니메이션 제외)
+- 파일 규격:
+  - 포맷: PNG(투명 배경)
+  - 권장 원본: 256x256
+  - 렌더 점유율: 타일 대비 70~78%
+- 네이밍 규칙:
+  - 타워: `tower_<system-id>.png` (예: `tower_sniper.png`)
+  - 적 유닛: `enemy_<system-id>.png` (예: `enemy_runner.png`)
+- 적용 현황:
+  - 타워 3종 스프라이트 적용 완료
+  - 적 유닛 2종 스프라이트 적용 완료 (Runner Drone, Guard Shell)

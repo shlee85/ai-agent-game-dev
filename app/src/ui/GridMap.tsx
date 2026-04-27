@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { View, LayoutChangeEvent, Pressable, Text, Animated } from "react-native";
+import { View, LayoutChangeEvent, Pressable, Text, Animated, Image } from "react-native";
 
 import { StageConfig } from "../data/stages";
+import { ENEMY_ASSETS } from "../data/enemyAssets";
+import { TOWER_ASSETS } from "../data/towerAssets";
 
 interface TowerData {
   type: string;
@@ -15,6 +17,7 @@ export interface AttackEffect {
   col: number;
   color: string;
   size: number;
+  effectType?: "impact_single" | "impact_slow" | "impact_aoe" | "recoil" | "item_aoe";
 }
 
 export interface FloatingTextData {
@@ -41,6 +44,7 @@ export interface EnemyData {
   color?: string; // 적의 색상 (에셋 교체 전 임시)
   size?: number; // 적의 렌더링 크기 비율
   killReward?: number; // 처치 시 획득 골드
+  spawnAt?: number; // 스폰 직후 연출용 타임스탬프
 }
 
 interface GridMapProps {
@@ -57,6 +61,15 @@ interface GridMapProps {
 
 function tileKey(r: number, c: number) {
   return `${r},${c}`;
+}
+
+function getEnemyAsset(type: string) {
+  return ENEMY_ASSETS[type] || ENEMY_ASSETS.guard;
+}
+
+function getEnemyPulseScale(enemyType: string, nowMs: number) {
+  if (enemyType !== "runner") return 1;
+  return 1 + Math.sin(nowMs / 120) * 0.045;
 }
 
 // 플로팅 텍스트 애니메이션 처리를 위한 개별 컴포넌트
@@ -179,20 +192,40 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                     {tower && (
                       <View
                         style={{
-                          width: tileSize * 0.7,
-                          height: tileSize * 0.7,
-                          backgroundColor: tower.color,
-                          borderRadius: 999, // 둥글게 (임시 타워 그래픽)
-                          borderWidth: 1.5,
-                          borderColor: "#ffffff40",
+                          width: tileSize * 0.74,
+                          height: tileSize * 0.74,
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
+                        <Image
+                          source={TOWER_ASSETS[tower.type]}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                          }}
+                          resizeMode="contain"
+                        />
                         {tower.level >= 2 && (
-                          <Text style={{ color: "white", fontWeight: "bold", fontSize: tileSize * 0.35 }}>
-                            U
-                          </Text>
+                          <View
+                            style={{
+                              position: "absolute",
+                              bottom: -2,
+                              right: -2,
+                              backgroundColor: "rgba(251, 191, 36, 0.95)",
+                              borderWidth: 1,
+                              borderColor: "#fef3c7",
+                              borderRadius: 999,
+                              width: tileSize * 0.24,
+                              height: tileSize * 0.24,
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Text style={{ color: "#111827", fontWeight: "900", fontSize: tileSize * 0.13 }}>
+                              U
+                            </Text>
+                          </View>
                         )}
                       </View>
                     )}
@@ -215,6 +248,19 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
             // 보간(Interpolation)을 통한 픽셀 단위 부드러운 위치 계산
             const row = currentTile[0] + (targetTile[0] - currentTile[0]) * enemy.progress;
             const col = currentTile[1] + (targetTile[1] - currentTile[1]) * enemy.progress;
+            const nowMs = Date.now();
+            const directionRow = targetTile[0] - currentTile[0];
+            const directionCol = targetTile[1] - currentTile[1];
+            const directionLen = Math.max(0.001, Math.sqrt(directionRow * directionRow + directionCol * directionCol));
+            const unitRow = directionRow / directionLen;
+            const unitCol = directionCol / directionLen;
+            const isRunner = enemy.type === "runner";
+            const isGuard = enemy.type === "guard";
+            const spawnElapsed = nowMs - (enemy.spawnAt || nowMs);
+            const showSpawnFlash = spawnElapsed < 280;
+            const spawnFlashOpacity = Math.max(0, 0.45 - spawnElapsed / 650);
+            const runnerPulseScale = getEnemyPulseScale(enemy.type, nowMs);
+            const guardBounceOffset = isGuard ? Math.sin(nowMs / 200) * 2.2 : 0;
 
             const isHit = enemy.hitTimer && enemy.hitTimer > 0;
 
@@ -237,14 +283,101 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                   style={{
                     width: tileSize * (enemy.size || 0.6),
                     height: tileSize * (enemy.size || 0.6),
-                    backgroundColor: isHit ? "#FFFFFF" : enemy.isSlowed ? "#3B82F6" : (enemy.color || "#EF4444"), // 피격 시 흰색 번쩍임
                     borderRadius: 6,
                     borderWidth: 2,
-                    borderColor: isHit ? "#FFFFFF" : enemy.isSlowed ? "#1D4ED8" : "#7F1D1D",
+                    borderColor: isHit ? "#FFFFFF" : enemy.isSlowed ? "#60A5FA" : "#7F1D1D",
+                    backgroundColor: "rgba(15, 23, 42, 0.35)",
                     alignItems: "center",
                     justifyContent: "center",
+                    overflow: "hidden",
+                    transform: [{ translateY: guardBounceOffset }, { scale: runnerPulseScale }],
                   }}
                 >
+                  {isRunner && (
+                    <View
+                      pointerEvents="none"
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        right: 0,
+                        bottom: 0,
+                        left: 0,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Image
+                        source={getEnemyAsset(enemy.type)}
+                        style={{
+                          position: "absolute",
+                          width: "90%",
+                          height: "90%",
+                          opacity: 0.18,
+                          transform: [
+                            { translateX: -unitCol * tileSize * 0.18 },
+                            { translateY: -unitRow * tileSize * 0.18 },
+                          ],
+                        }}
+                        resizeMode="contain"
+                      />
+                      <Image
+                        source={getEnemyAsset(enemy.type)}
+                        style={{
+                          position: "absolute",
+                          width: "84%",
+                          height: "84%",
+                          opacity: 0.12,
+                          transform: [
+                            { translateX: -unitCol * tileSize * 0.3 },
+                            { translateY: -unitRow * tileSize * 0.3 },
+                          ],
+                        }}
+                        resizeMode="contain"
+                      />
+                    </View>
+                  )}
+                  <Image
+                    source={getEnemyAsset(enemy.type)}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="contain"
+                  />
+                  {enemy.isSlowed && (
+                    <View
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        right: 0,
+                        bottom: 0,
+                        left: 0,
+                        backgroundColor: "rgba(59, 130, 246, 0.28)",
+                      }}
+                    />
+                  )}
+                  {isHit && (
+                    <View
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        right: 0,
+                        bottom: 0,
+                        left: 0,
+                        backgroundColor: "rgba(255, 255, 255, 0.45)",
+                      }}
+                    />
+                  )}
+                  {showSpawnFlash && (
+                    <View
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        right: 0,
+                        bottom: 0,
+                        left: 0,
+                        backgroundColor: "#E2E8F0",
+                        opacity: spawnFlashOpacity,
+                      }}
+                    />
+                  )}
                   {/* HP Bar */}
                   <View style={{ position: "absolute", top: -8, width: "100%", height: 4, backgroundColor: "#000" }}>
                     <View style={{ width: `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%`, height: "100%", backgroundColor: "#22C55E" }} />
@@ -259,23 +392,124 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
           })}
 
           {/* 공격 이펙트 렌더링 */}
-          {attackEffects.map((effect) => (
-            <View
-              key={effect.id}
-              style={{
-                position: "absolute",
-                top: effect.row * tileSize + tileSize / 2 - effect.size / 2,
-                left: effect.col * tileSize + tileSize / 2 - effect.size / 2,
-                width: effect.size,
-                height: effect.size,
-                backgroundColor: effect.color,
-                borderRadius: 999,
-                opacity: 0.6,
-                zIndex: 30,
-                pointerEvents: "none",
-              }}
-            />
-          ))}
+          {attackEffects.map((effect) => {
+            const commonStyle = {
+              position: "absolute" as const,
+              top: effect.row * tileSize + tileSize / 2 - effect.size / 2,
+              left: effect.col * tileSize + tileSize / 2 - effect.size / 2,
+              width: effect.size,
+              height: effect.size,
+              borderRadius: 999,
+              zIndex: 30,
+              pointerEvents: "none" as const,
+            };
+
+            if (effect.effectType === "recoil") {
+              return (
+                <View key={effect.id} style={{ ...commonStyle, alignItems: "center", justifyContent: "center" }}>
+                  <View
+                    style={{
+                      position: "absolute",
+                      width: effect.size,
+                      height: effect.size,
+                      borderRadius: 999,
+                      borderWidth: 2,
+                      borderColor: effect.color,
+                      opacity: 0.75,
+                    }}
+                  />
+                  <View
+                    style={{
+                      width: effect.size * 0.45,
+                      height: effect.size * 0.45,
+                      borderRadius: 999,
+                      backgroundColor: effect.color,
+                      opacity: 0.55,
+                    }}
+                  />
+                </View>
+              );
+            }
+
+            if (effect.effectType === "impact_single") {
+              return (
+                <View
+                  key={effect.id}
+                  style={{
+                    ...commonStyle,
+                    backgroundColor: effect.color,
+                    opacity: 0.85,
+                    transform: [{ scaleX: 0.65 }, { scaleY: 1.2 }],
+                  }}
+                />
+              );
+            }
+
+            if (effect.effectType === "impact_slow") {
+              return (
+                <View key={effect.id} style={{ ...commonStyle, alignItems: "center", justifyContent: "center" }}>
+                  <View
+                    style={{
+                      position: "absolute",
+                      width: effect.size,
+                      height: effect.size,
+                      borderRadius: 999,
+                      borderWidth: 2,
+                      borderColor: effect.color,
+                      opacity: 0.9,
+                    }}
+                  />
+                  <View
+                    style={{
+                      width: effect.size * 0.6,
+                      height: effect.size * 0.6,
+                      borderRadius: 999,
+                      backgroundColor: effect.color,
+                      opacity: 0.3,
+                    }}
+                  />
+                </View>
+              );
+            }
+
+            if (effect.effectType === "impact_aoe" || effect.effectType === "item_aoe") {
+              return (
+                <View key={effect.id} style={{ ...commonStyle, alignItems: "center", justifyContent: "center" }}>
+                  <View
+                    style={{
+                      position: "absolute",
+                      width: effect.size,
+                      height: effect.size,
+                      borderRadius: 999,
+                      borderWidth: 2,
+                      borderColor: effect.color,
+                      opacity: 0.9,
+                    }}
+                  />
+                  <View
+                    style={{
+                      width: effect.size * 0.72,
+                      height: effect.size * 0.72,
+                      borderRadius: 999,
+                      backgroundColor: effect.color,
+                      opacity: 0.45,
+                    }}
+                  />
+                </View>
+              );
+            }
+
+            return (
+              <View
+                key={effect.id}
+                style={{
+                  ...commonStyle,
+                  backgroundColor: effect.color,
+                  opacity: 0.6,
+                }}
+              />
+            );
+          })}
 
           {/* 플로팅 텍스트 렌더링 */}
           {floatingTexts.map((txt) => (

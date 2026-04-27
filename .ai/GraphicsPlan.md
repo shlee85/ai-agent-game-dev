@@ -60,3 +60,21 @@
 ## 6) 애니메이션 원칙
 - **이펙트 연출:** 과도한 프레임 애니메이션보다는, 스프링 애니메이션(`react-native-reanimated`)과 `Opacity`, `Scale` 변화를 활용한 모던하고 부드러운 스킬 이펙트 지향.
 - **피드백:** 적 피격 시 순간적인 흰색 번쩍임(Flash), 타워 발사 시 반동(Recoil) 효과를 통해 타격감 극대화.
+
+## 7) Beta 2.0 스프라이트 제작 가이드 (타워 1차)
+- 제작 단위: 타워당 1장(정지 일러스트)
+- 권장 캔버스: 256x256, 투명 배경 PNG
+- 시각 중심: 중앙 배치(중앙 앵커), 외곽 글로우는 알파 여백 포함
+- 렌더 크기: 실제 게임에서는 타일의 70~78%로 축소 렌더
+- 파일 위치:
+  - `app/assets/units/towers/tower_sniper.png`
+  - `app/assets/units/towers/tower_aoe.png`
+  - `app/assets/units/towers/tower_slow.png`
+
+## 8) Beta 2.0 스프라이트 제작 가이드 (적 유닛 2차)
+- 제작 단위: 적 유닛당 1장(정지 일러스트)
+- 권장 캔버스: 256x256, 투명 배경 PNG
+- 렌더 크기: 적 타입의 `size` 스탯을 기준으로 타일 내부 축소 렌더
+- 파일 위치:
+  - `app/assets/units/enemies/enemy_runner.png`
+  - `app/assets/units/enemies/enemy_guard.png`

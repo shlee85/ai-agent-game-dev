@@ -154,6 +154,7 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
             color: enemyStats.color,
             size: enemyStats.size,
             killReward: killReward,
+            spawnAt: Date.now(),
           };
           setEnemies((prev) => [...prev, newEnemy]);
         }
@@ -242,14 +243,32 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
             const tTile = nTile || cTile;
             const eRow = cTile[0] + (tTile[0] - cTile[0]) * t.progress;
             const eCol = cTile[1] + (tTile[1] - cTile[1]) * t.progress;
+            const [towerRowStr, towerColStr] = towerKey.split(",");
+            const towerRow = Number(towerRowStr);
+            const towerCol = Number(towerColStr);
 
-            // 이펙트 추가 (타겟팅된 적 위치에 레이저/스플래시 폭발 렌더링)
+            // 이펙트 추가: 타워 발사 리코일 + 타겟 임팩트
+            effectsToDraw.push({
+              id: `fx-recoil-${Date.now()}-${Math.random()}`,
+              row: towerRow,
+              col: towerCol,
+              color: towerStats.color,
+              size: towerStats.attackType === "aoe" ? 22 : 16,
+              effectType: "recoil",
+            });
+
             effectsToDraw.push({
               id: `fx-${Date.now()}-${Math.random()}`,
               row: eRow,
               col: eCol,
               color: towerStats.color,
               size: towerStats.attackType === "aoe" ? 40 : 16,
+              effectType:
+                towerStats.attackType === "aoe"
+                  ? "impact_aoe"
+                  : towerStats.attackType === "slow"
+                    ? "impact_slow"
+                    : "impact_single",
             });
 
             // 타입별 데미지/효과 적용
@@ -467,6 +486,7 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
           col: targetCol,
           color: activeItem.color,
           size: radius * 2 * 32, // 임시 크기 계산 (GridMap에서 타일 기반으로 사이즈 처리하면 더 좋음, 여기서는 크게)
+          effectType: "item_aoe",
         }
       ]);
       setTimeout(() => {
