@@ -1,15 +1,17 @@
 import "./global.css";
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, StatusBar, Text, View } from "react-native";
+import { StatusBar, View } from "react-native";
 import * as ScreenOrientation from "expo-screen-orientation";
 import * as NavigationBar from "expo-navigation-bar";
 
 import { WaveScreen } from "./src/screens/WaveScreen";
 import { LobbyScreen } from "./src/screens/LobbyScreen";
+import { Phase0Screen } from "./src/screens/Phase0Screen";
+import { Phase1Screen } from "./src/screens/Phase1Screen";
 import { Difficulty } from "./src/data/difficulty";
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<"lobby" | "wave">("lobby");
+  const [currentScreen, setCurrentScreen] = useState<"lobby" | "wave" | "phase0" | "phase1">("lobby");
   const [selectedWave, setSelectedWave] = useState<1 | 2 | 3>(1);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("normal");
   const [resetKey, setResetKey] = useState<number>(0);
@@ -32,13 +34,15 @@ export default function App() {
       {currentScreen === "lobby" ? (
         <LobbyScreen 
           initialDifficulty={selectedDifficulty}
+          onOpenPhase0={() => setCurrentScreen("phase0")}
+          onOpenPhase1={() => setCurrentScreen("phase1")}
           onSelectWave={(wave, difficulty) => {
             setSelectedWave(wave);
             setSelectedDifficulty(difficulty);
             setCurrentScreen("wave");
           }} 
         />
-      ) : (
+      ) : currentScreen === "wave" ? (
         <WaveScreen 
           key={`${selectedWave}-${resetKey}`}
           waveId={selectedWave}
@@ -49,6 +53,10 @@ export default function App() {
           }}
           onRestartWave={() => setResetKey((prev) => prev + 1)}
         />
+      ) : currentScreen === "phase0" ? (
+        <Phase0Screen onBack={() => setCurrentScreen("lobby")} />
+      ) : (
+        <Phase1Screen onBack={() => setCurrentScreen("lobby")} />
       )}
     </View>
   );

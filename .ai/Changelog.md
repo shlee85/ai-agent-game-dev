@@ -4,6 +4,23 @@
 
 ---
 
+## [2026-04-27] Beta 2.0 1차 마감 문서 동기화
+- **Git Revision (Commit Hash):** `03e77ce`
+- **Commit Message:** `feat: Beta 2.0 캐릭터 UI/전투 피드백 고도화 및 Text 렌더 오류 수정`
+
+### 마감 상태 요약
+- 타워 3종/적 2종 스프라이트 적용 완료
+- 적 연출(잔상/바운스/스폰 플래시) 및 타입별 타워 발사 피드백 적용 완료
+- 로비 버전 배지 `beta2.0` 반영 완료
+- TypeScript/Lint 검증 통과
+
+### 문서 동기화
+- `GamePlan.md`: Beta 2.0 완료 현황 및 동결 체크리스트 반영
+- `Character.md`: 적용 현황/동결 기준 반영
+- `Talk2.0.md`: 단계별 의사결정 및 변경 로그 연동
+
+---
+
 ## [Pending Commit] Beta 2.0 (2차): 적 유닛 스프라이트 적용
 - **Commit Message:** `feat: Beta 2.0 2차 적 유닛 스프라이트 렌더링 적용`
 

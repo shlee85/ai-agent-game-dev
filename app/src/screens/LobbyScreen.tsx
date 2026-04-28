@@ -8,9 +8,11 @@ import { Difficulty } from "../data/difficulty";
 interface LobbyScreenProps {
   initialDifficulty: Difficulty;
   onSelectWave: (waveId: 1 | 2 | 3, difficulty: Difficulty) => void;
+  onOpenPhase0: () => void;
+  onOpenPhase1: () => void;
 }
 
-export function LobbyScreen({ initialDifficulty, onSelectWave }: LobbyScreenProps) {
+export function LobbyScreen({ initialDifficulty, onSelectWave, onOpenPhase0, onOpenPhase1 }: LobbyScreenProps) {
   const [maxUnlocked, setMaxUnlocked] = useState<number>(1);
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>(initialDifficulty);
 
@@ -37,7 +39,7 @@ export function LobbyScreen({ initialDifficulty, onSelectWave }: LobbyScreenProp
       imageStyle={{ opacity: 0.6 }} // 우주 배경이 너무 밝지 않게
     >
       <View className="absolute right-4 top-4 z-10 rounded-md border border-cyan-500/40 bg-slate-950/80 px-2 py-1">
-        <Text className="text-[10px] font-black tracking-wider text-cyan-400/90">beta2.0</Text>
+        <Text className="text-[10px] font-black tracking-wider text-cyan-400/90">beta3.0</Text>
       </View>
 
       {/* 타이틀 영역 */}
@@ -157,6 +159,20 @@ export function LobbyScreen({ initialDifficulty, onSelectWave }: LobbyScreenProp
         className="absolute bottom-8 right-8 px-4 py-2 bg-slate-900/80 rounded-lg border border-rose-900/50 active:bg-slate-800"
       >
          <Text className="text-rose-500/80 font-bold text-xs tracking-wider">RESET PROGRESS</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={onOpenPhase0}
+        className="absolute bottom-8 left-8 rounded-lg border border-cyan-700/70 bg-slate-900/90 px-3 py-2 active:bg-slate-800"
+      >
+        <Text className="text-xs font-black tracking-wider text-cyan-300">PHASE0 3D TEST</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={onOpenPhase1}
+        className="absolute bottom-8 left-44 rounded-lg border border-fuchsia-700/70 bg-slate-900/90 px-3 py-2 active:bg-slate-800"
+      >
+        <Text className="text-xs font-black tracking-wider text-fuchsia-300">PHASE1 3D TEST</Text>
       </TouchableOpacity>
     </ImageBackground>
   );

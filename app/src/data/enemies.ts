@@ -13,7 +13,7 @@ export interface EnemyStats {
 export const ENEMY_CONFIG: Record<EnemyType, EnemyStats> = {
   guard: {
     id: "guard",
-    name: "Guard Shell",
+    name: "Guard (Guard Shell)",
     baseHp: 120, // 기본형(튼튼함)
     baseSpeed: 1.0, // 느림
     killReward: 10,
@@ -22,7 +22,7 @@ export const ENEMY_CONFIG: Record<EnemyType, EnemyStats> = {
   },
   runner: {
     id: "runner",
-    name: "Runner Drone",
+    name: "Runner (Runner Drone)",
     baseHp: 45, // 돌격형(체력 낮음)
     baseSpeed: 2.2, // 아주 빠름
     killReward: 12,

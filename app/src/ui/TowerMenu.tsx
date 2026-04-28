@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { TOWER_CONFIG } from "../data/towers";
+import { getTowerRoleLabel, getTowerRoleTag } from "../data/visualTheme";
 
 interface TowerMenuProps {
   towerData: { type: string; color: string; level: number };
@@ -29,11 +30,15 @@ export function TowerMenu({ towerData, gold, onUpgrade, onSell, onClose }: Tower
         
         {/* 타워 정보 */}
         <View className="flex-row items-center flex-1">
-          <View style={{ backgroundColor: towerData.color }} className="w-10 h-10 rounded-full border-2 border-slate-500 mr-3 items-center justify-center">
-             {towerData.level >= 2 && <Text className="text-white font-bold text-sm">U</Text>}
+          <View style={{ backgroundColor: towerData.color }} className="mr-3 h-10 w-10 items-center justify-center rounded-full border-2 border-slate-500">
+            <Text className="text-[10px] font-black text-slate-950">{getTowerRoleTag(towerData.type)}</Text>
+            {towerData.level >= 2 && <Text className="absolute -bottom-1 -right-1 text-[10px] font-bold text-white">U</Text>}
           </View>
           <View>
             <Text className="text-white font-bold text-base">{stats.name} <Text className="text-yellow-400">Lv.{towerData.level}</Text></Text>
+            <Text className="text-[10px] font-black tracking-wider text-cyan-300/90">
+              {getTowerRoleTag(towerData.type)} · {getTowerRoleLabel(towerData.type)}
+            </Text>
             <Text className="text-slate-400 text-xs">ATK: {stats.baseDamage * (1 + 0.5 * (towerData.level - 1))} | RNG: {stats.baseRange}</Text>
           </View>
         </View>

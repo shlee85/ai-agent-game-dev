@@ -1,0 +1,27 @@
+diff --git a/node_modules/three-stdlib/loaders/GLTFLoader.js b/node_modules/three-stdlib/loaders/GLTFLoader.js
+index 851226b..7978f7b 100644
+--- a/node_modules/three-stdlib/loaders/GLTFLoader.js
++++ b/node_modules/three-stdlib/loaders/GLTFLoader.js
+@@ -1804,10 +1804,18 @@ class GLTFParser {
+     let isObjectURL = false;
+     if (sourceDef.bufferView !== void 0) {
+       sourceURI = parser.getDependency("bufferView", sourceDef.bufferView).then(function(bufferView) {
+-        isObjectURL = true;
+-        const blob = new Blob([bufferView], { type: sourceDef.mimeType });
+-        sourceURI = URL.createObjectURL(blob);
+-        return sourceURI;
++        isObjectURL = false;
++        const u8 = bufferView instanceof ArrayBuffer ? new Uint8Array(bufferView) : new Uint8Array(bufferView.buffer, bufferView.byteOffset, bufferView.byteLength);
++        const b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
++        let output = "";
++        for (let i = 0; i < u8.length; i += 3) {
++          const a = u8[i];
++          const b = i + 1 < u8.length ? u8[i + 1] : void 0;
++          const c = i + 2 < u8.length ? u8[i + 2] : void 0;
++          const t = (a << 16) | ((b || 0) << 8) | (c || 0);
++          output += b64[(t >> 18) & 63] + b64[(t >> 12) & 63] + (b === void 0 ? "=" : b64[(t >> 6) & 63]) + (c === void 0 ? "=" : b64[t & 63]);
++        }
++        return "data:" + sourceDef.mimeType + ";base64," + output;
+       });
+     } else if (sourceDef.uri === void 0) {
+       throw new Error("THREE.GLTFLoader: Image " + sourceIndex + " is missing URI and bufferView");
