@@ -27,8 +27,9 @@
 ---
 
 ## [2026-05-06] Beta 4.0: 상점·웨이브 확장·관리자 모드·UI 고도화
+- **Git Revision (Commit Hash):** `56b84d6`
 - **Commit Message:** `feat: Beta 4.0 — 상점/Wave 1~15 확장/관리자 모드/UI 고도화`
-- **Push Status:** `origin/main` 업로드 완료
+- **Push Status:** `origin/main` 업로드 완료 (`cea3f81 -> 56b84d6`)
 
 ### 상세 변경 사항 요약
 
