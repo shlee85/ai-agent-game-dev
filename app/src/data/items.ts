@@ -1,10 +1,10 @@
-export type ItemType = "targeted_aoe" | "global_freeze" | "global_aoe";
+export type ItemType = "targeted_aoe" | "global_freeze" | "global_aoe" | "heart_boost";
 
 export interface ItemStats {
   id: string;
   name: string;
   type: ItemType;
-  cost: number; // 다이아몬드 소모량
+  cost: number; // 상점 구매 가격 표기용(인게임 사용 시 소모 없음)
   damage: number;
   radius?: number; // 타겟팅 폭탄용 반경
   duration?: number; // 빙결 지속 시간 (초)
@@ -41,5 +41,14 @@ export const ITEM_CONFIG: Record<string, ItemStats> = {
     damage: 35, // 광역치고는 쏠쏠한 데미지
     color: "#F59E0B", // 노란 화염
     description: "맵 전체의 모든 적에게 즉시 폭격을 가합니다.",
+  },
+  heart_boost: {
+    id: "heart_boost",
+    name: "하트 증폭 (Heart Boost)",
+    type: "heart_boost",
+    cost: 1,
+    damage: 0,
+    color: "#EF4444",
+    description: "즉시 하트를 1 회복합니다.",
   },
 };

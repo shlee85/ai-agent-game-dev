@@ -4,6 +4,77 @@
 
 ---
 
+## [2026-04-28] Beta 3.0 비주얼 정렬 및 3D 검증 파이프라인 반영
+- **Git Revision (Commit Hash):** `cea3f81`
+- **Commit Message:** `feat: Beta 3.0 비주얼 정렬 및 3D 검증 파이프라인 반영`
+- **Push Status:** `origin/main` 업로드 완료 (`03e77ce -> cea3f81`)
+
+### 상세 변경 사항 요약
+1. **Beta 3.0 대화/기획 문서 정리**
+   - `.ai/Talk3.0.md` 신규 생성 및 대화 결정사항 누적 기록
+   - `GamePlan.md`, `Character.md`, `Talk2.0.md` 업데이트
+2. **캐릭터/맵 비주얼 고도화**
+   - 타워/적 PNG 리프레시 (`tower_*`, `enemy_*`)
+   - `GridMap.tsx`, `BuildMenu.tsx`, `TowerMenu.tsx`, `HUD.tsx` 시각 문법 정렬
+   - 네이밍 정렬: Display Name / System ID / Asset File 매핑 고정
+3. **3D 검증 트랙 추가**
+   - `Phase0Screen.tsx`, `Phase1Screen.tsx` 추가 및 로비 진입 동선 연결
+   - GLB/GLTF 로딩 경로 반영 및 Metro 확장자 설정 보강
+4. **GLTF 로딩 안정화**
+   - `patch-package` 도입 (`postinstall`) 및 `three-stdlib` 패치 반영
+   - `app/patches/three-stdlib+2.36.1.patch` 추가
+
+---
+
+## [2026-05-06] Beta 4.0: 상점·웨이브 확장·관리자 모드·UI 고도화
+- **Commit Message:** `feat: Beta 4.0 — 상점/Wave 1~15 확장/관리자 모드/UI 고도화`
+- **Push Status:** `origin/main` 업로드 완료
+
+### 상세 변경 사항 요약
+
+1. **로비 전용 상점 추가**
+   - `app/src/screens/ShopScreen.tsx` 신규 추가
+   - `app/src/data/shop.ts` 신규 추가 (상품 스키마, 가격, 쿨다운/상한 정책)
+   - `app/src/data/itemAssets.ts` 신규 추가 (아이템 아이콘 매핑)
+   - `app/assets/items/` 아이콘 4종 추가
+   - 보석은 상점 구매에서만 소모, 인게임은 재고 수량만 소모로 전환
+   - 연속 구매 쿨다운 0.25초, 아이템 보유 상한 99 적용
+
+2. **Wave 1~15 확장**
+   - `app/src/data/waves.ts`: Wave 1~15 난이도별 스폰/보상 데이터 전면 반영
+   - `app/src/data/stages.ts`: Wave 1~15 전부 고유 맵(경로) 적용
+   - Wave 7: Time Objective(시간제) 웨이브 — 타이머 종료 시 클리어
+   - 난이도별 진행도 완전 분리 (`maxUnlockedWave_easy/normal/hard`)
+
+3. **로비 UI 개선**
+   - Wave 카드 가로 스크롤형 + 한 화면 6개 표시
+   - Wave 1~15 각각 고유 색상 구분
+   - Wave 번호 표시 버그 수정 (010~015 → 10~15)
+   - SHOP 버튼 다이아몬드 아이콘형으로 변경
+   - Phase 0/1 TEST 버튼 제거
+
+4. **관리자 모드**
+   - 로비 상단 `ADMIN ON/OFF` 토글
+   - ON: 다이아 1000 / 전 웨이브 오픈 / 웨이브 시작 골드 1000
+   - OFF: ON 직전 다이아 값 복구
+   - 추가 기능: `RESET <난이도>` / `ITEM +5`
+
+5. **인게임 개선**
+   - Wave 결과 리포트 UI (처치 수, 누수 수, 획득 골드/보석, 사용 아이템)
+   - Wave reset 확인창(Alert) 추가
+
+6. **캐릭터 이름 확정 및 코드 반영**
+   - 펄스 랜서 (Pulse Lancer) / 노바 캐논 (Nova Cannon) / 크라이오 필드 (Cryo Field)
+   - 러너 드론 (Runner Drone) / 가드 쉘 (Guard Shell)
+
+7. **문서 동기화**
+   - `.ai/Talk4.0.md` 신규 생성
+   - `.ai/WavePlan.md` Wave 1~7 + 8~15 설계 전면 업데이트
+   - `.ai/GamePlan.md` Beta 4.0 릴리즈 체크리스트 반영
+   - `CLAUDE.md` 신규 추가 (프로젝트 컨텍스트)
+
+---
+
 ## [2026-04-27] Beta 2.0 1차 마감 문서 동기화
 - **Git Revision (Commit Hash):** `03e77ce`
 - **Commit Message:** `feat: Beta 2.0 캐릭터 UI/전투 피드백 고도화 및 Text 렌더 오류 수정`

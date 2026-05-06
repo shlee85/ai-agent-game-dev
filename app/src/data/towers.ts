@@ -16,7 +16,7 @@ export interface TowerStats {
 export const TOWER_CONFIG: Record<string, TowerStats> = {
   sniper: {
     id: "sniper",
-    name: "Sniper (Aegis Lance)",
+    name: "펄스 랜서 (Pulse Lancer)",
     cost: 120,
     color: "#3B82F6",
     baseDamage: 45,
@@ -27,7 +27,7 @@ export const TOWER_CONFIG: Record<string, TowerStats> = {
   },
   aoe: {
     id: "aoe",
-    name: "AOE (Ember Nova)",
+    name: "노바 캐논 (Nova Cannon)",
     cost: 160,
     color: "#F97316",
     baseDamage: 15,
@@ -39,7 +39,7 @@ export const TOWER_CONFIG: Record<string, TowerStats> = {
   },
   slow: {
     id: "slow",
-    name: "Slow (Frost Ward)",
+    name: "크라이오 필드 (Cryo Field)",
     cost: 140,
     color: "#06B6D4",
     baseDamage: 5,

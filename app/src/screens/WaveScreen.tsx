@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Pressable, Text, TouchableOpacity, Animated, ImageBackground } from "react-native";
+import { View, Pressable, Text, TouchableOpacity, Animated, ImageBackground, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { DIFFICULTY_CONFIG, Difficulty } from "../data/difficulty";
 import { STAGE_CONFIG } from "../data/stages";
-import { WAVE_CONFIG } from "../data/waves";
+import { WAVE_CONFIG, WaveId } from "../data/waves";
 import { TOWER_CONFIG } from "../data/towers";
 import { ENEMY_CONFIG, EnemyType } from "../data/enemies";
 import { ITEM_CONFIG, ItemStats } from "../data/items";
@@ -16,16 +16,50 @@ import { ItemShop } from "../ui/ItemShop";
 
 type GameState = "playing" | "game_over" | "wave_clear" | "paused";
 
-export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave, onRestartWave }: { waveId: 1 | 2 | 3, difficultyLevel: Difficulty, onBackToLobby: () => void, onNextWave: () => void, onRestartWave: () => void }) {
+export function WaveScreen({
+  waveId,
+  difficultyLevel,
+  diamond,
+  itemInventory,
+  onConsumeItem,
+  onWaveClearReward,
+  onBackToLobby,
+  onNextWave,
+  onRestartWave,
+  initialGoldOverride,
+}: {
+  waveId: WaveId;
+  difficultyLevel: Difficulty;
+  diamond: number;
+  itemInventory: Record<string, number>;
+  onConsumeItem: (itemId: string) => boolean;
+  onWaveClearReward: (rewardDiamond: number) => void;
+  onBackToLobby: () => void;
+  onNextWave: () => void;
+  onRestartWave: () => void;
+  initialGoldOverride?: number;
+}) {
   const difficulty = DIFFICULTY_CONFIG[difficultyLevel || "normal"];
   const wave = WAVE_CONFIG[waveId];
   const stage = STAGE_CONFIG[waveId];
+  const waveSpawnInterval = wave.spawnIntervalSecByDifficulty[difficultyLevel];
+  const waveSpawnCount = wave.totalSpawnCountByDifficulty[difficultyLevel];
+  const waveClearGoldReward = wave.clearGoldRewardByDifficulty[difficultyLevel];
+  const waveClearDiamondReward = wave.clearDiamondRewardByDifficulty[difficultyLevel];
+  const isTimeObjective = wave.isTimeObjective === true;
+  const waveKillGoldMultiplier =
+    wave.killGoldMultiplierByDifficulty?.[difficultyLevel] ?? 1;
 
   const [gameState, setGameState] = useState<GameState>("playing");
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
-  const [gold, setGold] = useState(difficulty.startGold);
-  const [diamond, setDiamond] = useState(difficulty.startDiamond);
+  const initialGold = initialGoldOverride ?? difficulty.startGold;
+  const [gold, setGold] = useState(initialGold);
   const [heart, setHeart] = useState(difficulty.startHeart);
+  const [timeLeftSec, setTimeLeftSec] = useState<number>(isTimeObjective ? wave.durationSec : 0);
+  const [killCount, setKillCount] = useState<number>(0);
+  const [usedItemCount, setUsedItemCount] = useState<number>(0);
+  const [leakedCount, setLeakedCount] = useState<number>(0);
+  const [earnedGoldFromKills, setEarnedGoldFromKills] = useState<number>(0);
   const [towers, setTowers] = useState<Record<string, any>>({});
   const [enemies, setEnemies] = useState<EnemyData[]>([]);
   const [attackEffects, setAttackEffects] = useState<AttackEffect[]>([]);
@@ -33,6 +67,18 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [activeItem, setActiveItem] = useState<ItemStats | null>(null);
   const [flashColor, setFlashColor] = useState<string | null>(null); // 글로벌 이펙트용
+
+  const handleRestartWaveWithConfirm = () => {
+    Alert.alert(
+      "웨이브 다시 시작",
+      "진행 상황이 초기화됩니다. 계속할까요?",
+      [
+        { text: "취소", style: "cancel" },
+        { text: "확인", style: "destructive", onPress: () => onRestartWave() },
+      ],
+      { cancelable: true }
+    );
+  };
 
   // Game Loop Refs
   const lastTimeRef = useRef(Date.now());
@@ -42,6 +88,11 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
   const towersRef = useRef(towers);
   const towerCooldownsRef = useRef<Record<string, number>>({});
   const gameStateRef = useRef(gameState);
+  const heartRef = useRef(heart);
+  const timeLeftRef = useRef<number>(wave.durationSec);
+  const timeShownRef = useRef<number>(Math.ceil(wave.durationSec));
+  const timeObjectiveClearTriggeredRef = useRef(false);
+  const clearRewardGrantedRef = useRef(false);
 
   // 타워 상태가 바뀔 때마다 Ref 갱신
   useEffect(() => {
@@ -51,6 +102,26 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
   useEffect(() => {
     gameStateRef.current = gameState;
   }, [gameState]);
+
+  useEffect(() => {
+    heartRef.current = heart;
+  }, [heart]);
+
+  useEffect(() => {
+    if (!isTimeObjective) return;
+    timeLeftRef.current = wave.durationSec;
+    timeShownRef.current = Math.ceil(wave.durationSec);
+    setTimeLeftSec(wave.durationSec);
+    timeObjectiveClearTriggeredRef.current = false;
+  }, [isTimeObjective, wave.durationSec]);
+
+  useEffect(() => {
+    if (gameState === "wave_clear" && !clearRewardGrantedRef.current) {
+      clearRewardGrantedRef.current = true;
+      setGold((prev) => prev + waveClearGoldReward);
+      onWaveClearReward(waveClearDiamondReward);
+    }
+  }, [gameState, onWaveClearReward, waveClearDiamondReward, waveClearGoldReward]);
 
   // 팝업 애니메이션 처리용
   const popupAnim = useRef(new Animated.Value(0)).current;
@@ -73,11 +144,12 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
     if (gameState === "wave_clear") {
       const saveProgress = async () => {
         try {
-          const saved = await AsyncStorage.getItem("maxUnlockedWave");
+          const progressKey = `maxUnlockedWave_${difficultyLevel}`;
+          const saved = await AsyncStorage.getItem(progressKey);
           const currentMax = saved ? Number(saved) : 1;
-          // 다음 웨이브가 있고(waveId < 3), 현재 클리어한 웨이브가 현재 해금된 최대 웨이브와 같거나 크다면 업데이트
-          if (waveId >= currentMax && waveId < 3) {
-            await AsyncStorage.setItem("maxUnlockedWave", String(waveId + 1));
+          // 다음 웨이브가 있고(waveId < 15), 현재 클리어한 웨이브가 현재 해금된 최대 웨이브와 같거나 크다면 업데이트
+          if (waveId >= currentMax && waveId < 15) {
+            await AsyncStorage.setItem(progressKey, String(waveId + 1));
           }
         } catch (e) {
           console.error("Failed to save progress", e);
@@ -85,7 +157,7 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
       };
       saveProgress();
     }
-  }, [gameState, waveId]);
+  }, [difficultyLevel, gameState, waveId]);
 
   useEffect(() => {
     lastTimeRef.current = Date.now();
@@ -100,12 +172,26 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
         return;
       }
 
+      // Time objective 웨이브일 때만 타이머를 갱신한다.
+      let timeUpNow = false;
+      if (isTimeObjective) {
+        timeLeftRef.current -= dt;
+        timeUpNow = timeLeftRef.current <= 0;
+
+        const clamped = Math.max(0, timeLeftRef.current);
+        const nextShown = Math.ceil(clamped);
+        if (nextShown !== timeShownRef.current) {
+          timeShownRef.current = nextShown;
+          setTimeLeftSec(clamped);
+        }
+      }
+
       // 1. 적군 스폰 로직
-      const maxSpawnCount = Math.floor(wave.totalSpawnCount * difficulty.spawnCountMultiplier);
-      if (spawnCountRef.current < maxSpawnCount) {
+      const maxSpawnCount = Math.floor(waveSpawnCount * difficulty.spawnCountMultiplier);
+      if (spawnCountRef.current < maxSpawnCount && (!isTimeObjective || !timeUpNow)) {
         spawnTimerRef.current += dt;
-        if (spawnTimerRef.current >= wave.spawnIntervalSec) {
-          spawnTimerRef.current -= wave.spawnIntervalSec;
+        if (spawnTimerRef.current >= waveSpawnInterval) {
+          spawnTimerRef.current -= waveSpawnInterval;
           spawnCountRef.current += 1;
           
           // 난이도에 따른 적 종류 제한(enemyTypeLimit) 반영하여 스폰할 적 후보 필터링
@@ -139,7 +225,9 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
 
           // 난이도 배율 적용
           const maxHp = Math.floor(enemyStats.baseHp * difficulty.enemyHpMultiplier);
-          const killReward = Math.floor(enemyStats.killReward * difficulty.killGoldMultiplier);
+          const killReward = Math.floor(
+            enemyStats.killReward * difficulty.killGoldMultiplier * waveKillGoldMultiplier
+          );
 
           const newEnemy: EnemyData = {
             id: `enemy-${Date.now()}-${spawnCountRef.current}`,
@@ -314,10 +402,12 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
 
         // 2-4. 체력이 다 닳은 적 제거 및 골드 획득
         const textsToDraw: FloatingTextData[] = [];
+        let killedThisFrame = 0;
         const aliveEnemies = currentEnemies.filter(e => {
           if (e.hp <= 0) {
             const reward = e.killReward || 10;
             newGoldEarned += reward; // 적 개별 처치 골드
+            killedThisFrame += 1;
             
             // 플로팅 텍스트 추가
             const ePath = (stage.paths && e.selectedPathIndex !== undefined) ? stage.paths[e.selectedPathIndex] : stage.pathTiles;
@@ -346,7 +436,12 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
           }, 800); // 0.8초 뒤 삭제
         }
 
+        if (killedThisFrame > 0) {
+          setKillCount((prev) => prev + killedThisFrame);
+        }
+
         if (newGoldEarned > 0) {
+          setEarnedGoldFromKills((prev) => prev + newGoldEarned);
           setGold((prev) => prev + newGoldEarned);
         }
 
@@ -371,7 +466,10 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
           }
         }
 
+        const projectedHeart = heartRef.current - heartsLost;
+
         if (heartsLost > 0) {
+          setLeakedCount((prev) => prev + heartsLost);
           setHeart((h) => {
             const nextH = Math.max(0, h - heartsLost);
             if (nextH === 0) setGameState("game_over");
@@ -380,13 +478,26 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
         }
 
         // 2-6. 웨이브 클리어 판정
-        const maxSpawnCountForClear = Math.floor(wave.totalSpawnCount * difficulty.spawnCountMultiplier);
-        if (
-          spawnCountRef.current >= maxSpawnCountForClear &&
-          nextEnemies.length === 0 &&
-          gameStateRef.current === "playing"
-        ) {
-          setGameState("wave_clear");
+        if (isTimeObjective) {
+          // Time objective: 타이머 종료 시 Heart가 남아있으면 즉시 클리어
+          if (
+            timeUpNow &&
+            projectedHeart > 0 &&
+            gameStateRef.current === "playing" &&
+            !timeObjectiveClearTriggeredRef.current
+          ) {
+            timeObjectiveClearTriggeredRef.current = true;
+            setGameState("wave_clear");
+          }
+        } else {
+          const maxSpawnCountForClear = Math.floor(waveSpawnCount * difficulty.spawnCountMultiplier);
+          if (
+            spawnCountRef.current >= maxSpawnCountForClear &&
+            nextEnemies.length === 0 &&
+            gameStateRef.current === "playing"
+          ) {
+            setGameState("wave_clear");
+          }
         }
 
         return nextEnemies;
@@ -420,15 +531,16 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
       return;
     }
 
-    if (diamond < item.cost) return;
+    if ((itemInventory[item.id] || 0) <= 0) return;
 
     if (item.type === "targeted_aoe") {
       setActiveItem(item);
       setSelectedCell(null); // 새로운 타겟팅 시작
     } else {
+      if (!onConsumeItem(item.id)) return;
+      setUsedItemCount((prev) => prev + 1);
       // 즉시 발동형 스킬 처리
-      setDiamond((prev) => prev - item.cost);
-      
+
       // 시각적 피드백 (플래시)
       setFlashColor(item.color);
       setTimeout(() => setFlashColor(null), 300);
@@ -452,6 +564,8 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
             slowTimer: item.duration || 4.0,
             speed: e.baseSpeed * 0.1, // 거의 멈춤 (0.1배속)
           }));
+        } else if (item.type === "heart_boost") {
+          setHeart((prev) => prev + 1);
         }
         
         return newEnemies;
@@ -464,12 +578,12 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
 
     if (activeItem && activeItem.type === "targeted_aoe") {
       // 타겟형 스킬 사용 로직
-      if (diamond < activeItem.cost) {
+      if ((itemInventory[activeItem.id] || 0) <= 0) {
         setActiveItem(null);
         return;
       }
-      
-      setDiamond((prev) => prev - activeItem.cost);
+      if (!onConsumeItem(activeItem.id)) return;
+      setUsedItemCount((prev) => prev + 1);
       
       // 해당 타일 중앙 좌표 (픽셀 대신 타일 좌표계 기준)
       const targetRow = row;
@@ -631,12 +745,13 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
           waveId={wave.id} 
           speedMultiplier={speedMultiplier}
           onToggleSpeed={() => setSpeedMultiplier(prev => (prev === 1 ? 2 : 1))}
+          timeLeftSec={isTimeObjective ? timeLeftSec : null}
         />
       </View>
 
       {/* 스킬 상점 오버레이 */}
       <ItemShop 
-        diamond={diamond} 
+        inventory={itemInventory}
         onUseItem={handleUseItem} 
         activeItemType={activeItem?.id || null} 
       />
@@ -690,10 +805,27 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
               {gameState === "game_over" ? "GAME OVER" : "WAVE CLEAR!"}
             </Text>
             <Text className="mt-2 text-slate-400 text-base">
-              {gameState === "game_over" ? "하트가 모두 소진되었습니다." : "모든 적을 막아냈습니다!"}
+              {gameState === "game_over"
+                ? "하트가 모두 소진되었습니다."
+                : waveId === 7
+                  ? "시간 목표를 달성했습니다!"
+                  : "모든 적을 막아냈습니다!"}
             </Text>
+
+            <View className="mt-4 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3">
+              <Text className="text-xs font-bold text-slate-400">RESULT REPORT</Text>
+              <Text className="mt-1 text-sm font-bold text-cyan-300">처치 수: {killCount}</Text>
+              <Text className="mt-1 text-sm font-bold text-rose-300">누수 수: {leakedCount}</Text>
+              <Text className="mt-1 text-sm font-bold text-amber-300">
+                획득 골드: {earnedGoldFromKills + (gameState === "wave_clear" ? waveClearGoldReward : 0)}
+              </Text>
+              <Text className="mt-1 text-sm font-bold text-violet-300">
+                획득 보석: {gameState === "wave_clear" ? waveClearDiamondReward : 0}
+              </Text>
+              <Text className="mt-1 text-sm font-bold text-emerald-300">사용 아이템: {usedItemCount}</Text>
+            </View>
             
-            {gameState === "wave_clear" && waveId < 3 && (
+            {gameState === "wave_clear" && waveId < 15 && (
               <TouchableOpacity 
                 className="mt-6 w-full rounded-xl bg-emerald-600 px-8 py-3 border border-emerald-500 active:bg-emerald-700"
                 onPress={() => {
@@ -705,7 +837,7 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
             )}
 
             <TouchableOpacity 
-              className={`w-full rounded-xl bg-slate-800 px-8 py-3 border border-slate-600 active:bg-slate-700 ${gameState === "wave_clear" && waveId < 3 ? "mt-3" : "mt-6"}`}
+              className={`w-full rounded-xl bg-slate-800 px-8 py-3 border border-slate-600 active:bg-slate-700 ${gameState === "wave_clear" && waveId < 15 ? "mt-3" : "mt-6"}`}
               onPress={() => {
                 onBackToLobby();
               }}
@@ -735,7 +867,7 @@ export function WaveScreen({ waveId, difficultyLevel, onBackToLobby, onNextWave,
 
             <TouchableOpacity 
               className="mt-3 w-full rounded-xl bg-amber-600 px-8 py-3 border border-amber-500 active:bg-amber-700"
-              onPress={() => onRestartWave()}
+              onPress={handleRestartWaveWithConfirm}
             >
               <Text className="text-slate-100 font-bold text-lg text-center">이 웨이브 다시 시작</Text>
             </TouchableOpacity>

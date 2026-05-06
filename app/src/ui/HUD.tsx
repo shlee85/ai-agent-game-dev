@@ -9,9 +9,17 @@ interface HUDProps {
   waveId: number;
   speedMultiplier: number;
   onToggleSpeed: () => void;
+  timeLeftSec?: number | null;
 }
 
-export function HUD({ gold, diamond, heart, waveId, speedMultiplier, onToggleSpeed }: HUDProps) {
+function formatTime(sec: number) {
+  const s = Math.max(0, Math.floor(sec));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m.toString().padStart(2, "0")}:${r.toString().padStart(2, "0")}`;
+}
+
+export function HUD({ gold, diamond, heart, waveId, speedMultiplier, onToggleSpeed, timeLeftSec }: HUDProps) {
   return (
     <View className="flex-row items-center gap-4 rounded-full border border-slate-700/50 bg-slate-900/80 px-5 py-2 shadow-sm" pointerEvents="auto">
       <View className="flex-row items-center">
@@ -27,6 +35,9 @@ export function HUD({ gold, diamond, heart, waveId, speedMultiplier, onToggleSpe
         <Text className="font-bold text-rose-400">{heart}</Text>
       </View>
       <Text className="font-bold text-blue-400 ml-2">Wave {waveId}</Text>
+      {typeof timeLeftSec === "number" && (
+        <Text className="font-bold text-amber-300">Time {formatTime(timeLeftSec)}</Text>
+      )}
       
       <Pressable 
         onPress={onToggleSpeed}

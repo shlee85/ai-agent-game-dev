@@ -35,9 +35,12 @@ export function TowerMenu({ towerData, gold, onUpgrade, onSell, onClose }: Tower
             {towerData.level >= 2 && <Text className="absolute -bottom-1 -right-1 text-[10px] font-bold text-white">U</Text>}
           </View>
           <View>
-            <Text className="text-white font-bold text-base">{stats.name} <Text className="text-yellow-400">Lv.{towerData.level}</Text></Text>
+            <View className="flex-row items-center gap-1">
+              <Text className="text-base font-bold text-white">{stats.name}</Text>
+              <Text className="text-base font-bold text-yellow-400">Lv.{towerData.level}</Text>
+            </View>
             <Text className="text-[10px] font-black tracking-wider text-cyan-300/90">
-              {getTowerRoleTag(towerData.type)} · {getTowerRoleLabel(towerData.type)}
+              {getTowerRoleTag(towerData.type)} | {getTowerRoleLabel(towerData.type)}
             </Text>
             <Text className="text-slate-400 text-xs">ATK: {stats.baseDamage * (1 + 0.5 * (towerData.level - 1))} | RNG: {stats.baseRange}</Text>
           </View>

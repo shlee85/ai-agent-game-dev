@@ -39,7 +39,7 @@ export function BuildMenu({ gold, onBuild, onClose }: BuildMenuProps) {
                 </View>
                 <Text className="text-xs font-semibold text-slate-300 text-center" numberOfLines={1}>{tower.name}</Text>
                 <Text className="text-[9px] font-black tracking-wider text-cyan-300/90">
-                  {getTowerRoleTag(tower.id)} · {getTowerRoleLabel(tower.id)}
+                  {getTowerRoleTag(tower.id)} | {getTowerRoleLabel(tower.id)}
                 </Text>
                 <View className="flex-row items-center mt-1">
                   <FontAwesome5 name="coins" size={8} color={canAfford ? "#FBBF24" : "#F87171"} className="mr-1" />
