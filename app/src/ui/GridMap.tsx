@@ -39,6 +39,7 @@ export interface EnemyData {
   pathIndex: number; // 현재 위치한 경로(pathTiles)의 인덱스
   progress: number; // 0.0 ~ 1.0 (현재 타일과 다음 타일 사이의 진행도)
   selectedPathIndex?: number; // 멀티 패스일 때 이 적이 사용할 경로 번호
+  immuneToSlow?: boolean;
   isSlowed?: boolean;
   slowTimer?: number;
   hitTimer?: number; // 피격 플래시 타이머

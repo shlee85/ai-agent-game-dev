@@ -243,6 +243,7 @@ export function WaveScreen({
             pathIndex: 0,
             progress: 0,
             selectedPathIndex: selectedPathIndex,
+            immuneToSlow: enemyStats.immuneToSlow,
             color: enemyStats.color,
             size: enemyStats.size,
             killReward: killReward,
@@ -375,9 +376,11 @@ export function WaveScreen({
             } else if (towerStats.attackType === "slow") {
               t.hp -= actualDamage;
               t.hitTimer = 0.1;
-              t.isSlowed = true;
-              t.slowTimer = towerStats.slowDuration;
-              t.speed = t.baseSpeed * (towerStats.slowMultiplier || 0.5);
+              if (!t.immuneToSlow) {
+                t.isSlowed = true;
+                t.slowTimer = towerStats.slowDuration;
+                t.speed = t.baseSpeed * (towerStats.slowMultiplier || 0.5);
+              }
             } else if (towerStats.attackType === "aoe") {
               // 광역(Splash) 처리
               const radius = towerStats.aoeRadius || 1.5;
@@ -573,9 +576,11 @@ export function WaveScreen({
             ...e,
             hp: e.hp - item.damage,
             hitTimer: 0.1,
-            isSlowed: true,
-            slowTimer: item.duration || 4.0,
-            speed: e.baseSpeed * 0.1, // 거의 멈춤 (0.1배속)
+            ...(e.immuneToSlow ? {} : {
+              isSlowed: true,
+              slowTimer: item.duration || 4.0,
+              speed: e.baseSpeed * 0.1,
+            }),
           }));
         } else if (item.type === "heart_boost") {
           setHeart((prev) => prev + 1);

@@ -11,11 +11,13 @@ export const TOWER_VISUAL_THEME: Record<string, TowerVisualTheme> = {
   sniper: { roleTag: "SN", roleLabel: "Precision" },
   aoe: { roleTag: "AOE", roleLabel: "Blast" },
   slow: { roleTag: "CC", roleLabel: "Control" },
+  chain: { roleTag: "VOLT", roleLabel: "Chain" },
 };
 
 export const ENEMY_VISUAL_THEME: Record<string, EnemyVisualTheme> = {
   runner: { threatTag: "RUSH" },
   guard: { threatTag: "HOLD" },
+  phantom: { threatTag: "GHOST" },
 };
 
 export function getTowerRoleTag(towerId: string): string {

@@ -30,6 +30,7 @@ export function LobbyScreen({
   onAdminAddItems,
 }: LobbyScreenProps) {
   const { t, lang, toggleLang } = useLanguage();
+  const TOTAL_WAVES = 20;
   const [allMaxUnlocked, setAllMaxUnlocked] = useState<Record<Difficulty, number>>({ easy: 1, normal: 1, hard: 1 });
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>(initialDifficulty);
   const WAVE_CARD_SIZE = 64;
@@ -52,6 +53,11 @@ export function LobbyScreen({
     13: { border: "#D946EF", accent: "#701A75", text: "#F5D0FE" },
     14: { border: "#F97316", accent: "#7C2D12", text: "#FED7AA" },
     15: { border: "#EF4444", accent: "#7F1D1D", text: "#FECACA" },
+    16: { border: "#A855F7", accent: "#4C1D95", text: "#E9D5FF" },
+    17: { border: "#7C3AED", accent: "#3B0764", text: "#DDD6FE" },
+    18: { border: "#6D28D9", accent: "#2E1065", text: "#C4B5FD" },
+    19: { border: "#5B21B6", accent: "#1E0742", text: "#A78BFA" },
+    20: { border: "#F59E0B", accent: "#78350F", text: "#FDE68A" },
   };
 
   // 로비에 진입할 때마다 3개 난이도 진행도를 동시에 읽어옴
@@ -92,7 +98,7 @@ export function LobbyScreen({
           </Text>
         </TouchableOpacity>
         <View className="rounded-md border border-cyan-500/40 bg-slate-950/80 px-2 py-1">
-          <Text className="text-[10px] font-black tracking-wider text-cyan-400/90">beta5.0</Text>
+          <Text className="text-[10px] font-black tracking-wider text-cyan-400/90">v1.0</Text>
         </View>
       </View>
 
@@ -193,7 +199,7 @@ export function LobbyScreen({
                   {diff === "easy" ? t.easy : diff === "normal" ? t.normal : t.hard}
                 </Text>
                 <Text className="text-[9px] font-bold text-slate-400 tracking-wider mt-0.5">
-                  {allMaxUnlocked[diff]}/15
+                  {allMaxUnlocked[diff]}/{TOTAL_WAVES}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -212,7 +218,7 @@ export function LobbyScreen({
           disableIntervalMomentum
           contentContainerStyle={{ gap: WAVE_GAP, paddingRight: 4 }}
         >
-          {Array.from({ length: 15 }, (_, idx) => idx + 1).map((wave) => {
+          {Array.from({ length: TOTAL_WAVES }, (_, idx) => idx + 1).map((wave) => {
             const isUnlocked = adminEnabled || wave <= allMaxUnlocked[selectedDiff];
             const tone = waveToneById[wave];
             return (

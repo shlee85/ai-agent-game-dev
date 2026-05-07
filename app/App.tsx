@@ -171,7 +171,7 @@ export default function App() {
             onBackToLobby={() => setCurrentScreen("lobby")}
             initialGoldOverride={adminEnabled ? 1000 : undefined}
             onNextWave={() => {
-              if (selectedWave < 15) setSelectedWave((selectedWave + 1) as WaveId);
+              if (selectedWave < 20) setSelectedWave((selectedWave + 1) as WaveId);
             }}
             onRestartWave={() => setResetKey((prev) => prev + 1)}
           />

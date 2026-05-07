@@ -1,3 +1,5 @@
+import { EnemyType } from "./enemies";
+
 export interface TowerStats {
   id: string;
   name: string;
@@ -11,6 +13,8 @@ export interface TowerStats {
   slowMultiplier?: number; // 0.5면 50% 감속
   slowDuration?: number; // 초 단위
   aoeRadius?: number; // 광역 범위 (타일 단위)
+  affinityEnemyType?: EnemyType; // 상성 적 타입
+  affinityMultiplier?: number;   // 상성 대상에게 적용되는 데미지 배율
 }
 
 export const TOWER_CONFIG: Record<string, TowerStats> = {
@@ -24,6 +28,8 @@ export const TOWER_CONFIG: Record<string, TowerStats> = {
     baseCooldown: 1.2,
     upgradeCost: 180,
     attackType: "single",
+    affinityEnemyType: "guard",
+    affinityMultiplier: 1.3,
   },
   aoe: {
     id: "aoe",
@@ -36,6 +42,8 @@ export const TOWER_CONFIG: Record<string, TowerStats> = {
     upgradeCost: 240,
     attackType: "aoe",
     aoeRadius: 1.5,
+    affinityEnemyType: "runner",
+    affinityMultiplier: 1.3,
   },
   slow: {
     id: "slow",
@@ -49,5 +57,21 @@ export const TOWER_CONFIG: Record<string, TowerStats> = {
     attackType: "slow",
     slowMultiplier: 0.5,
     slowDuration: 2.0,
+    affinityEnemyType: "guard",
+    affinityMultiplier: 1.3,
+  },
+  chain: {
+    id: "chain",
+    name: "볼트 스트라이커 (Volt Striker)",
+    cost: 150,
+    color: "#A855F7",
+    baseDamage: 8,
+    baseRange: 3.0,
+    baseCooldown: 0.7,
+    upgradeCost: 225,
+    attackType: "aoe",
+    aoeRadius: 1.0,
+    affinityEnemyType: "phantom",
+    affinityMultiplier: 1.3,
   },
 };

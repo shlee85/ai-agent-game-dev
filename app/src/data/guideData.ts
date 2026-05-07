@@ -47,6 +47,20 @@ export const TOWER_GUIDE: Record<string, GuideEntry> = {
       kr: "매우 낮은 데미지(5) · 보조 타워 없이 처치 비효율",
     },
   },
+  chain: {
+    summary: {
+      en: "Fast-firing AOE tower that chains lightning across nearby enemies. Lower damage per hit but overwhelms with speed.",
+      kr: "빠른 연사 광역 타워. 근처 적에게 번개를 연쇄. 타격 데미지는 낮지만 연사 속도로 압도.",
+    },
+    pros: {
+      en: "Fastest attack speed (0.7s CD) · AOE radius · Phantom affinity (×1.3)",
+      kr: "최고 공격 속도(0.7초 쿨타임) · 광역 범위 · 팬텀 상성(×1.3)",
+    },
+    cons: {
+      en: "Low damage per hit (8) · Short AOE radius (1.0 tile) · Weak vs. heavy armor alone",
+      kr: "낮은 타격 데미지(8) · 짧은 광역 반경(1.0타일) · 단독 중장갑 처리 비효율",
+    },
+  },
 };
 
 export const ITEM_GUIDE: Record<string, GuideEntry> = {
@@ -135,6 +149,20 @@ export const ENEMY_GUIDE: Record<string, GuideEntry> = {
     cons: {
       en: "Low HP (45 base) · Countered hard by Nova Cannon (AOE)",
       kr: "낮은 체력(기본 45) · 노바 캐논(AOE)에 매우 취약",
+    },
+  },
+  phantom: {
+    summary: {
+      en: "Ghostly unit immune to all slow effects. Moderate HP and speed — Cryo Field is useless against it.",
+      kr: "슬로우 효과 완전 면역의 유령 유닛. 중간 체력과 속도 — 크라이오 필드가 무효.",
+    },
+    pros: {
+      en: "Immune to slow (Cryo Field has no effect) · Medium HP+speed balance",
+      kr: "슬로우 면역(크라이오 필드 무효) · 체력·속도 균형 중간형",
+    },
+    cons: {
+      en: "No armor bonus · Countered by Volt Striker affinity (×1.3)",
+      kr: "방어 보너스 없음 · 볼트 스트라이커 상성에 취약(×1.3)",
     },
   },
 };

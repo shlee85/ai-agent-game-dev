@@ -1,9 +1,9 @@
 import { EnemyType } from "./enemies";
 import { Difficulty } from "./difficulty";
 
-export type WaveId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15;
+export type WaveId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20;
 export type LobbyWaveId = WaveId;
-export type TimeObjectiveWaveId = 7;
+export type TimeObjectiveWaveId = 7 | 19;
 export type WaveIdAll = WaveId;
 
 export interface WaveConfig {
@@ -455,6 +455,155 @@ export const WAVE_CONFIG: Record<WaveIdAll, WaveConfig> = {
       easy: 8,
       normal: 9,
       hard: 10,
+    },
+  },
+  16: {
+    id: 16,
+    durationSec: 480,
+    spawnIntervalSecByDifficulty: {
+      easy: 1.3,
+      normal: 1.2,
+      hard: 1.0,
+    },
+    enemies: [
+      { type: "guard", weight: 40 },
+      { type: "runner", weight: 30 },
+      { type: "phantom", weight: 30 },
+    ],
+    totalSpawnCountByDifficulty: {
+      easy: 200,
+      normal: 240,
+      hard: 280,
+    },
+    clearGoldRewardByDifficulty: {
+      easy: 450,
+      normal: 580,
+      hard: 720,
+    },
+    clearDiamondRewardByDifficulty: {
+      easy: 8,
+      normal: 9,
+      hard: 10,
+    },
+  },
+  17: {
+    id: 17,
+    durationSec: 510,
+    spawnIntervalSecByDifficulty: {
+      easy: 1.2,
+      normal: 1.1,
+      hard: 0.95,
+    },
+    enemies: [
+      { type: "guard", weight: 50 },
+      { type: "phantom", weight: 50 },
+    ],
+    totalSpawnCountByDifficulty: {
+      easy: 220,
+      normal: 265,
+      hard: 310,
+    },
+    clearGoldRewardByDifficulty: {
+      easy: 490,
+      normal: 640,
+      hard: 790,
+    },
+    clearDiamondRewardByDifficulty: {
+      easy: 9,
+      normal: 10,
+      hard: 11,
+    },
+  },
+  18: {
+    id: 18,
+    durationSec: 540,
+    spawnIntervalSecByDifficulty: {
+      easy: 1.1,
+      normal: 1.0,
+      hard: 0.9,
+    },
+    enemies: [
+      { type: "runner", weight: 60 },
+      { type: "phantom", weight: 40 },
+    ],
+    totalSpawnCountByDifficulty: {
+      easy: 240,
+      normal: 290,
+      hard: 340,
+    },
+    clearGoldRewardByDifficulty: {
+      easy: 540,
+      normal: 700,
+      hard: 860,
+    },
+    clearDiamondRewardByDifficulty: {
+      easy: 9,
+      normal: 10,
+      hard: 12,
+    },
+  },
+  19: {
+    id: 19,
+    durationSec: 220,
+    spawnIntervalSecByDifficulty: {
+      easy: 0.95,
+      normal: 0.85,
+      hard: 0.75,
+    },
+    enemies: [
+      { type: "guard", weight: 30 },
+      { type: "runner", weight: 30 },
+      { type: "phantom", weight: 40 },
+    ],
+    totalSpawnCountByDifficulty: {
+      easy: 231,
+      normal: 258,
+      hard: 293,
+    },
+    clearGoldRewardByDifficulty: {
+      easy: 1800,
+      normal: 2100,
+      hard: 2500,
+    },
+    clearDiamondRewardByDifficulty: {
+      easy: 23,
+      normal: 25,
+      hard: 28,
+    },
+    isTimeObjective: true,
+    killGoldMultiplierByDifficulty: {
+      easy: 0,
+      normal: 0,
+      hard: 0,
+    },
+  },
+  20: {
+    id: 20,
+    durationSec: 720,
+    spawnIntervalSecByDifficulty: {
+      easy: 0.82,
+      normal: 0.75,
+      hard: 0.68,
+    },
+    enemies: [
+      { type: "guard", weight: 30 },
+      { type: "runner", weight: 35 },
+      { type: "phantom", weight: 35 },
+    ],
+    totalSpawnCountByDifficulty: {
+      easy: 380,
+      normal: 480,
+      hard: 580,
+    },
+    clearGoldRewardByDifficulty: {
+      easy: 600,
+      normal: 800,
+      hard: 1000,
+    },
+    clearDiamondRewardByDifficulty: {
+      easy: 10,
+      normal: 12,
+      hard: 15,
     },
   },
 };
