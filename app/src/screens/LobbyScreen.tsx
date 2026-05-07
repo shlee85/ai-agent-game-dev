@@ -7,6 +7,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 import { Difficulty } from "../data/difficulty";
 import { WaveId } from "../data/waves";
 import { useLanguage } from "../contexts/LanguageContext";
+import { soundManager } from "../utils/soundManager";
 
 interface LobbyScreenProps {
   initialDifficulty: Difficulty;
@@ -33,6 +34,7 @@ export function LobbyScreen({
   const TOTAL_WAVES = 20;
   const [allMaxUnlocked, setAllMaxUnlocked] = useState<Record<Difficulty, number>>({ easy: 1, normal: 1, hard: 1 });
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>(initialDifficulty);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const WAVE_CARD_SIZE = 64;
   const WAVE_GAP = 8;
   const VISIBLE_WAVE_COUNT = 6;
@@ -59,6 +61,13 @@ export function LobbyScreen({
     19: { border: "#5B21B6", accent: "#1E0742", text: "#A78BFA" },
     20: { border: "#F59E0B", accent: "#78350F", text: "#FDE68A" },
   };
+
+  useEffect(() => {
+    soundManager.init().then(() => {
+      soundManager.playBgm("bgm_lobby", 0.4);
+    });
+    return () => { soundManager.stopBgm(); };
+  }, []);
 
   // 로비에 진입할 때마다 3개 난이도 진행도를 동시에 읽어옴
   const loadProgress = useCallback(async () => {
@@ -266,15 +275,33 @@ export function LobbyScreen({
         </View>
       </View>
 
-      <TouchableOpacity 
-        onPress={async () => {
-          await AsyncStorage.removeItem(`maxUnlockedWave_${selectedDiff}`);
-          setAllMaxUnlocked((prev) => ({ ...prev, [selectedDiff]: 1 }));
-        }}
-        className="absolute bottom-8 right-8 px-4 py-2 bg-slate-900/80 rounded-lg border border-rose-900/50 active:bg-slate-800"
+      {/* 설정 톱니바퀴 버튼 */}
+      <TouchableOpacity
+        onPress={() => setSettingsOpen((v) => !v)}
+        className="absolute bottom-8 right-8 h-12 w-12 items-center justify-center rounded-2xl border-2 border-slate-600 bg-slate-900/95 active:bg-slate-800"
       >
-         <Text className="text-rose-500/80 font-bold text-xs tracking-wider">{t.reset} {selectedDiff.toUpperCase()}</Text>
+        <Ionicons name="settings-outline" size={22} color="#94A3B8" />
       </TouchableOpacity>
+
+      {/* 설정 패널 */}
+      {settingsOpen && (
+        <View className="absolute bottom-24 right-4 rounded-2xl border border-slate-600 bg-slate-900/98 p-4 gap-3" style={{ minWidth: 200 }}>
+          <Text className="text-xs font-black tracking-widest text-slate-400 mb-1">SETTINGS</Text>
+          <TouchableOpacity
+            onPress={async () => {
+              await AsyncStorage.removeItem(`maxUnlockedWave_${selectedDiff}`);
+              setAllMaxUnlocked((prev) => ({ ...prev, [selectedDiff]: 1 }));
+              setSettingsOpen(false);
+            }}
+            className="flex-row items-center gap-2 rounded-xl border border-rose-800/60 bg-rose-950/80 px-4 py-2 active:opacity-80"
+          >
+            <Ionicons name="refresh" size={14} color="#F87171" />
+            <Text className="text-xs font-bold text-rose-400 tracking-wider">
+              {t.reset} {selectedDiff.toUpperCase()}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <TouchableOpacity
         onPress={onOpenShop}

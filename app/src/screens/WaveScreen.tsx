@@ -16,6 +16,7 @@ import { BuildMenu, TOWER_OPTIONS } from "../ui/BuildMenu";
 import { TowerMenu } from "../ui/TowerMenu";
 import { ItemShop } from "../ui/ItemShop";
 import { useLanguage } from "../contexts/LanguageContext";
+import { soundManager } from "../utils/soundManager";
 
 type GameState = "playing" | "game_over" | "wave_clear" | "paused";
 
@@ -124,6 +125,12 @@ export function WaveScreen({
       clearRewardGrantedRef.current = true;
       setGold((prev) => prev + waveClearGoldReward);
       onWaveClearReward(waveClearDiamondReward);
+      soundManager.playSfx("sfx_wave_clear", 0.85, 0);
+      soundManager.setBgmVolume(0.15);
+    }
+    if (gameState === "game_over") {
+      soundManager.playSfx("sfx_game_over", 0.85, 0);
+      soundManager.setBgmVolume(0.15);
     }
   }, [gameState, onWaveClearReward, waveClearDiamondReward, waveClearGoldReward]);
 
@@ -152,7 +159,7 @@ export function WaveScreen({
           const saved = await AsyncStorage.getItem(progressKey);
           const currentMax = saved ? Number(saved) : 1;
           // 다음 웨이브가 있고(waveId < 15), 현재 클리어한 웨이브가 현재 해금된 최대 웨이브와 같거나 크다면 업데이트
-          if (waveId >= currentMax && waveId < 15) {
+          if (waveId >= currentMax && waveId < 20) {
             await AsyncStorage.setItem(progressKey, String(waveId + 1));
           }
         } catch (e) {
@@ -162,6 +169,17 @@ export function WaveScreen({
       saveProgress();
     }
   }, [difficultyLevel, gameState, waveId]);
+
+  // 사운드 초기화 및 BGM
+  useEffect(() => {
+    soundManager.init().then(() => {
+      soundManager.playBgm("bgm_wave", 0.35);
+    });
+    return () => {
+      soundManager.stopBgm();
+      soundManager.unloadSfx();
+    };
+  }, []);
 
   useEffect(() => {
     lastTimeRef.current = Date.now();
@@ -346,6 +364,7 @@ export function WaveScreen({
             const towerCol = Number(towerColStr);
 
             // 이펙트 추가: 타워 발사 리코일 + 타겟 임팩트
+            soundManager.playSfx(soundManager.getTowerSfxKey(towerStats.id), 0.55, 80);
             effectsToDraw.push({
               id: `fx-recoil-${Date.now()}-${Math.random()}`,
               row: towerRow,
@@ -485,6 +504,7 @@ export function WaveScreen({
         const projectedHeart = heartRef.current - heartsLost;
 
         if (heartsLost > 0) {
+          soundManager.playSfx("sfx_enemy_leak", 0.7, 200);
           setLeakedCount((prev) => prev + heartsLost);
           setHeart((h) => {
             const nextH = Math.max(0, h - heartsLost);
@@ -555,6 +575,7 @@ export function WaveScreen({
     } else {
       if (!onConsumeItem(item.id)) return;
       setUsedItemCount((prev) => prev + 1);
+      soundManager.playSfx("sfx_item_use", 0.7, 0);
       // 즉시 발동형 스킬 처리
 
       // 시각적 피드백 (플래시)
@@ -602,7 +623,8 @@ export function WaveScreen({
       }
       if (!onConsumeItem(activeItem.id)) return;
       setUsedItemCount((prev) => prev + 1);
-      
+      soundManager.playSfx("sfx_item_use", 0.7, 0);
+
       // 해당 타일 중앙 좌표 (픽셀 대신 타일 좌표계 기준)
       const targetRow = row;
       const targetCol = col;

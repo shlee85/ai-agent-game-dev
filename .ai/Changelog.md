@@ -4,6 +4,37 @@
 
 ---
 
+## [2026-05-07] v1.0 단계1 — 사운드 시스템·설정창·Wave 20 검증
+
+### 상세 변경 사항 요약
+
+1. **사운드 시스템 (expo-av)**
+   - `expo-av ~16.0.8` 설치
+   - Python wave 모듈로 SF 사운드 10종 생성 (`app/assets/sounds/`)
+     - BGM: `bgm_lobby.wav` (8s 루프), `bgm_wave.wav` (10s 루프)
+     - SFX: 타워별 공격음 4종 (`sfx_attack_sniper/aoe/slow/chain.wav`)
+     - SFX: 이벤트 4종 (`sfx_wave_clear/game_over/item_use/enemy_leak.wav`)
+   - `app/src/utils/soundManager.ts` 신규 생성
+     - 싱글톤 SoundManager: BGM 루프, SFX 캐싱+쿨타임, 타워ID→SFX 매핑
+   - `WaveScreen.tsx` 연결: 마운트 시 BGM 시작, 타워 공격마다 SFX, 적 누수/아이템 사용/결과화면 이벤트 사운드
+   - `LobbyScreen.tsx` 연결: 마운트 시 로비 BGM 시작
+
+2. **RESET → 설정 톱니바퀴**
+   - 로비 우측 하단 공개 RESET 버튼 제거
+   - 톱니바퀴(⚙) 아이콘 버튼 추가 (`Ionicons settings-outline`)
+   - 버튼 클릭 시 설정 패널 토글 — 내부에 현재 선택 난이도 진행도 RESET 버튼 배치
+
+3. **Wave 20 검증 완료**
+   - 듀얼패스(Path A/B) 교대 스폰 로직 확인 — 두 경로 모두 `[8,7]` 수렴, 중간 겹침 없음
+   - 적 구성(가드 30·러너 35·팬텀 35) 및 스폰 타이밍 정상 동작 확인
+
+4. **Bug Fix: 웨이브 진행 저장 범위 수정**
+   - `WaveScreen.tsx` `waveId < 15` → `waveId < 20` (Wave 16~20 클리어 시 진행도 저장 안 되던 버그 수정)
+
+5. **TypeScript 체크 통과 (오류 없음)**
+
+---
+
 ## [2026-04-28] Beta 3.0 비주얼 정렬 및 3D 검증 파이프라인 반영
 - **Git Revision (Commit Hash):** `cea3f81`
 - **Commit Message:** `feat: Beta 3.0 비주얼 정렬 및 3D 검증 파이프라인 반영`
