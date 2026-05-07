@@ -74,6 +74,10 @@ export function WaveScreen({
   const [flashColor, setFlashColor] = useState<string | null>(null); // 글로벌 이펙트용
   const [tutorialStepIdx, setTutorialStepIdx] = useState<number | null>(null);
   const tutorialAnim = useRef(new Animated.Value(0)).current;
+  const tutorialActiveRef = useRef(waveId === 1); // Wave 1은 튜토리얼 확인 전까지 잠시 정지
+
+  const [isQuickPaused, setIsQuickPaused] = useState(false);
+  const isQuickPausedRef = useRef(false);
 
   const handleRestartWaveWithConfirm = () => {
     Alert.alert(
@@ -183,11 +187,20 @@ export function WaveScreen({
     };
   }, []);
 
+  // isQuickPaused → Ref 동기화
+  useEffect(() => {
+    isQuickPausedRef.current = isQuickPaused;
+  }, [isQuickPaused]);
+
   // 튜토리얼: Wave 1 첫 진입 시에만 표시
   useEffect(() => {
     if (waveId !== 1) return;
     AsyncStorage.getItem("tutorialShown").then((val) => {
-      if (!val) setTutorialStepIdx(0);
+      if (!val) {
+        setTutorialStepIdx(0); // tutorialActiveRef는 이미 true
+      } else {
+        tutorialActiveRef.current = false; // 이미 본 경우 즉시 해제
+      }
     });
   }, [waveId]);
 
@@ -207,7 +220,7 @@ export function WaveScreen({
       const dt = (now - lastTimeRef.current) / 1000; // 초 단위 델타타임
       lastTimeRef.current = now;
 
-      if (gameStateRef.current !== "playing") {
+      if (gameStateRef.current !== "playing" || tutorialActiveRef.current || isQuickPausedRef.current) {
         requestRef.current = requestAnimationFrame(loop);
         return;
       }
@@ -814,15 +827,33 @@ export function WaveScreen({
         activeItemType={activeItem?.id || null} 
       />
 
-      {/* 메뉴(일시정지) 버튼 */}
-      <View 
-        className="absolute top-4 right-6 z-20"
+      {/* 우측 상단 버튼 그룹: 재생/일시정지 + 메뉴 */}
+      <View
+        className="absolute top-4 right-6 z-20 flex-row gap-2"
         style={{ elevation: 20 }}
         pointerEvents="box-none"
       >
-        <TouchableOpacity 
+        {/* 재생/일시정지 토글 버튼 */}
+        {gameState === "playing" && (
+          <TouchableOpacity
+            className="h-9 w-9 items-center justify-center rounded-xl border border-slate-600 bg-slate-800/90 active:bg-slate-700"
+            onPress={() => setIsQuickPaused((v) => !v)}
+          >
+            <Ionicons
+              name={isQuickPaused ? "play" : "pause"}
+              size={16}
+              color={isQuickPaused ? "#34D399" : "#94A3B8"}
+            />
+          </TouchableOpacity>
+        )}
+
+        {/* ⚙️ 메뉴 버튼 */}
+        <TouchableOpacity
           className="rounded-xl bg-slate-800/90 px-4 py-2 border border-slate-600 active:bg-slate-700 shadow-md"
-          onPress={() => setGameState("paused")}
+          onPress={() => {
+            setIsQuickPaused(false); // 퀵 포즈 해제 후 메뉴 진입
+            setGameState("paused");
+          }}
         >
           <Text className="font-bold text-slate-300">{t.menu}</Text>
         </TouchableOpacity>
@@ -1028,6 +1059,7 @@ export function WaveScreen({
                   setTutorialStepIdx(tutorialStepIdx + 1);
                 } else {
                   await AsyncStorage.setItem("tutorialShown", "1");
+                  tutorialActiveRef.current = false; // 게임 시작
                   setTutorialStepIdx(null);
                 }
               }}
