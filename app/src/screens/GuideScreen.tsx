@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView, ImageBackground } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, ImageBackground, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
 
@@ -9,6 +9,8 @@ import { ITEM_CONFIG } from "../data/items";
 import { ENEMY_CONFIG, EnemyType } from "../data/enemies";
 import { SHOP_ITEMS } from "../data/shop";
 import { TOWER_GUIDE, ITEM_GUIDE, ENEMY_GUIDE } from "../data/guideData";
+import { ITEM_ASSETS } from "../data/itemAssets";
+import { getTowerRoleTag, getEnemyThreatTag } from "../data/visualTheme";
 
 type GuideTab = "tower" | "item" | "enemy";
 
@@ -83,13 +85,13 @@ export function GuideScreen({ onBack }: { onBack: () => void }) {
                 key={stats.id}
                 className="mb-4 rounded-2xl border border-slate-700 bg-slate-900/95 p-4"
               >
-                {/* 타워 헤더 */}
+                {/* 타워 헤더 — 게임 내 표현과 동일한 색상 원 + 역할 태그 */}
                 <View className="flex-row items-center gap-3 mb-3">
                   <View
-                    className="w-12 h-12 rounded-xl items-center justify-center border-2"
-                    style={{ backgroundColor: stats.color + "33", borderColor: stats.color }}
+                    className="w-12 h-12 rounded-full items-center justify-center border-2 border-slate-500"
+                    style={{ backgroundColor: stats.color }}
                   >
-                    <FontAwesome5 name="crosshairs" size={22} color={stats.color} />
+                    <Text className="text-sm font-black text-slate-950">{getTowerRoleTag(stats.id)}</Text>
                   </View>
                   <View className="flex-1">
                     <Text className="text-base font-black text-white">
@@ -155,13 +157,17 @@ export function GuideScreen({ onBack }: { onBack: () => void }) {
                 key={item.id}
                 className="mb-4 rounded-2xl border border-slate-700 bg-slate-900/95 p-4"
               >
-                {/* 아이템 헤더 */}
+                {/* 아이템 헤더 — 인게임 ItemShop과 동일한 실제 이미지 사용 */}
                 <View className="flex-row items-center gap-3 mb-3">
                   <View
                     className="w-12 h-12 rounded-xl items-center justify-center border-2"
                     style={{ backgroundColor: item.color + "33", borderColor: item.color }}
                   >
-                    <Ionicons name="flash" size={24} color={item.color} />
+                    <Image
+                      source={ITEM_ASSETS[item.id]}
+                      style={{ width: 32, height: 32 }}
+                      resizeMode="contain"
+                    />
                   </View>
                   <View className="flex-1">
                     <Text className="text-base font-black text-white">
@@ -217,13 +223,13 @@ export function GuideScreen({ onBack }: { onBack: () => void }) {
                 key={enemyId}
                 className="mb-4 rounded-2xl border border-slate-700 bg-slate-900/95 p-4"
               >
-                {/* 적 헤더 */}
+                {/* 적 헤더 — 게임 내 표현과 동일한 색상 원 + 위협 태그 */}
                 <View className="flex-row items-center gap-3 mb-3">
                   <View
-                    className="w-12 h-12 rounded-xl items-center justify-center border-2"
-                    style={{ backgroundColor: enemy.color + "33", borderColor: enemy.color }}
+                    className="w-12 h-12 rounded-full items-center justify-center border-2 border-slate-500"
+                    style={{ backgroundColor: enemy.color }}
                   >
-                    <Ionicons name="skull" size={24} color={enemy.color} />
+                    <Text className="text-[10px] font-black text-slate-950">{getEnemyThreatTag(enemyId)}</Text>
                   </View>
                   <View className="flex-1">
                     <Text className="text-base font-black text-white">
