@@ -1,6 +1,7 @@
 import React from "react";
 import { Text, View, Pressable } from "react-native";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface HUDProps {
   gold: number;
@@ -20,6 +21,7 @@ function formatTime(sec: number) {
 }
 
 export function HUD({ gold, diamond, heart, waveId, speedMultiplier, onToggleSpeed, timeLeftSec }: HUDProps) {
+  const { t } = useLanguage();
   return (
     <View className="flex-row items-center gap-4 rounded-full border border-slate-700/50 bg-slate-900/80 px-5 py-2 shadow-sm" pointerEvents="auto">
       <View className="flex-row items-center">
@@ -34,9 +36,9 @@ export function HUD({ gold, diamond, heart, waveId, speedMultiplier, onToggleSpe
         <Ionicons name="heart" size={14} color="#FB7185" className="mr-1" />
         <Text className="font-bold text-rose-400">{heart}</Text>
       </View>
-      <Text className="font-bold text-blue-400 ml-2">Wave {waveId}</Text>
+      <Text className="font-bold text-blue-400 ml-2">{t.waveLabel} {waveId}</Text>
       {typeof timeLeftSec === "number" && (
-        <Text className="font-bold text-amber-300">Time {formatTime(timeLeftSec)}</Text>
+        <Text className="font-bold text-amber-300">{t.timeLabel} {formatTime(timeLeftSec)}</Text>
       )}
       
       <Pressable 

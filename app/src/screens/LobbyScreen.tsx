@@ -6,11 +6,13 @@ import { FontAwesome5 } from "@expo/vector-icons";
 
 import { Difficulty } from "../data/difficulty";
 import { WaveId } from "../data/waves";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface LobbyScreenProps {
   initialDifficulty: Difficulty;
   onSelectWave: (waveId: WaveId, difficulty: Difficulty) => void;
   onOpenShop: () => void;
+  onOpenGuide: () => void;
   adminEnabled: boolean;
   onToggleAdmin: () => void;
   onAdminResetDifficultyProgress: (difficulty: Difficulty) => Promise<void>;
@@ -21,12 +23,14 @@ export function LobbyScreen({
   initialDifficulty,
   onSelectWave,
   onOpenShop,
+  onOpenGuide,
   adminEnabled,
   onToggleAdmin,
   onAdminResetDifficultyProgress,
   onAdminAddItems,
 }: LobbyScreenProps) {
-  const [maxUnlocked, setMaxUnlocked] = useState<number>(1);
+  const { t, lang, toggleLang } = useLanguage();
+  const [allMaxUnlocked, setAllMaxUnlocked] = useState<Record<Difficulty, number>>({ easy: 1, normal: 1, hard: 1 });
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>(initialDifficulty);
   const WAVE_CARD_SIZE = 64;
   const WAVE_GAP = 8;
@@ -50,19 +54,23 @@ export function LobbyScreen({
     15: { border: "#EF4444", accent: "#7F1D1D", text: "#FECACA" },
   };
 
-  // 로비에 진입할 때마다 진행도를 다시 읽어옴
+  // 로비에 진입할 때마다 3개 난이도 진행도를 동시에 읽어옴
   const loadProgress = useCallback(async () => {
     try {
-      const saved = await AsyncStorage.getItem(`maxUnlockedWave_${selectedDiff}`);
-      if (saved) {
-        setMaxUnlocked(Number(saved));
-      } else {
-        setMaxUnlocked(1);
-      }
+      const [easy, normal, hard] = await Promise.all([
+        AsyncStorage.getItem("maxUnlockedWave_easy"),
+        AsyncStorage.getItem("maxUnlockedWave_normal"),
+        AsyncStorage.getItem("maxUnlockedWave_hard"),
+      ]);
+      setAllMaxUnlocked({
+        easy: easy ? Number(easy) : 1,
+        normal: normal ? Number(normal) : 1,
+        hard: hard ? Number(hard) : 1,
+      });
     } catch (e) {
       console.error("Failed to load progress", e);
     }
-  }, [selectedDiff]);
+  }, []);
 
   useEffect(() => {
     loadProgress();
@@ -74,8 +82,18 @@ export function LobbyScreen({
       className="flex-1 items-center justify-center bg-slate-950"
       imageStyle={{ opacity: 0.6 }} // 우주 배경이 너무 밝지 않게
     >
-      <View className="absolute right-4 top-4 z-10 rounded-md border border-cyan-500/40 bg-slate-950/80 px-2 py-1">
-        <Text className="text-[10px] font-black tracking-wider text-cyan-400/90">beta4.0</Text>
+      <View className="absolute right-4 top-4 z-10 flex-row items-center gap-2">
+        <TouchableOpacity
+          onPress={toggleLang}
+          className="rounded-md border border-slate-600 bg-slate-900/90 px-2 py-1 active:bg-slate-800"
+        >
+          <Text className="text-[10px] font-black tracking-wider text-slate-300">
+            {lang === "en" ? "KR" : "EN"}
+          </Text>
+        </TouchableOpacity>
+        <View className="rounded-md border border-cyan-500/40 bg-slate-950/80 px-2 py-1">
+          <Text className="text-[10px] font-black tracking-wider text-cyan-400/90">beta5.0</Text>
+        </View>
       </View>
 
       <TouchableOpacity
@@ -99,7 +117,7 @@ export function LobbyScreen({
           <TouchableOpacity
             onPress={async () => {
               await onAdminResetDifficultyProgress(selectedDiff);
-              setMaxUnlocked(1);
+              setAllMaxUnlocked((prev) => ({ ...prev, [selectedDiff]: 1 }));
             }}
             className="rounded-md border border-rose-600 bg-rose-950/90 px-3 py-2 active:opacity-90"
           >
@@ -130,7 +148,7 @@ export function LobbyScreen({
           SENTINEL PROTOCOL
         </Text>
         <Text className="text-xs font-bold text-fuchsia-400 tracking-[0.3em] mt-1">
-          DEFEND THE SPACE UNION
+          {t.tagline}
         </Text>
       </View>
       
@@ -165,14 +183,19 @@ export function LobbyScreen({
               style={shadow}
               className={`px-6 py-3 rounded-xl border-2 flex-row items-center gap-2 ${borderClass}`}
             >
-              <Ionicons 
-                name={diff === "easy" ? "shield-checkmark" : diff === "normal" ? "flash" : "skull"} 
-                size={16} 
-                color={isSelected ? (diff === "easy" ? "#34D399" : diff === "normal" ? "#22D3EE" : "#E879F9") : "#94A3B8"} 
+              <Ionicons
+                name={diff === "easy" ? "shield-checkmark" : diff === "normal" ? "flash" : "skull"}
+                size={16}
+                color={isSelected ? (diff === "easy" ? "#34D399" : diff === "normal" ? "#22D3EE" : "#E879F9") : "#94A3B8"}
               />
-              <Text className={`font-black tracking-widest ${colorClass}`}>
-                {diff === "easy" ? "EASY" : diff === "normal" ? "NORMAL" : "HARD"}
-              </Text>
+              <View className="items-start">
+                <Text className={`font-black tracking-widest ${colorClass}`}>
+                  {diff === "easy" ? t.easy : diff === "normal" ? t.normal : t.hard}
+                </Text>
+                <Text className="text-[9px] font-bold text-slate-400 tracking-wider mt-0.5">
+                  {allMaxUnlocked[diff]}/15
+                </Text>
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -190,7 +213,7 @@ export function LobbyScreen({
           contentContainerStyle={{ gap: WAVE_GAP, paddingRight: 4 }}
         >
           {Array.from({ length: 15 }, (_, idx) => idx + 1).map((wave) => {
-            const isUnlocked = adminEnabled || wave <= maxUnlocked;
+            const isUnlocked = adminEnabled || wave <= allMaxUnlocked[selectedDiff];
             const tone = waveToneById[wave];
             return (
               <TouchableOpacity
@@ -214,7 +237,7 @@ export function LobbyScreen({
                   style={{ backgroundColor: isUnlocked ? tone.accent : "#0F172A" }}
                 />
 
-                <Text className="text-[7px] font-bold text-slate-400 mb-0.5 tracking-wider">WAVE</Text>
+                <Text className="text-[7px] font-bold text-slate-400 mb-0.5 tracking-wider">{t.waveLabel.toUpperCase()}</Text>
                 <Text
                   className="text-lg font-black"
                   style={{
@@ -240,11 +263,11 @@ export function LobbyScreen({
       <TouchableOpacity 
         onPress={async () => {
           await AsyncStorage.removeItem(`maxUnlockedWave_${selectedDiff}`);
-          setMaxUnlocked(1);
+          setAllMaxUnlocked((prev) => ({ ...prev, [selectedDiff]: 1 }));
         }}
         className="absolute bottom-8 right-8 px-4 py-2 bg-slate-900/80 rounded-lg border border-rose-900/50 active:bg-slate-800"
       >
-         <Text className="text-rose-500/80 font-bold text-xs tracking-wider">RESET {selectedDiff.toUpperCase()}</Text>
+         <Text className="text-rose-500/80 font-bold text-xs tracking-wider">{t.reset} {selectedDiff.toUpperCase()}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -254,7 +277,17 @@ export function LobbyScreen({
         <View className="mb-1 h-16 w-16 items-center justify-center rounded-2xl border-2 border-cyan-500/70 bg-slate-900/95">
           <FontAwesome5 name="gem" size={30} color="#67E8F9" />
         </View>
-        <Text className="text-xs font-black tracking-[0.2em] text-cyan-300">SHOP</Text>
+        <Text className="text-xs font-black tracking-[0.2em] text-cyan-300">{t.shop}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={onOpenGuide}
+        className="absolute bottom-14 left-36 items-center active:opacity-85"
+      >
+        <View className="mb-1 h-16 w-16 items-center justify-center rounded-2xl border-2 border-amber-500/70 bg-slate-900/95">
+          <FontAwesome5 name="book-open" size={26} color="#FDE68A" />
+        </View>
+        <Text className="text-xs font-black tracking-[0.2em] text-amber-300">{t.guide}</Text>
       </TouchableOpacity>
     </ImageBackground>
   );

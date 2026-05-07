@@ -4,6 +4,7 @@ import { FontAwesome5 } from "@expo/vector-icons";
 
 import { MAX_ITEM_INVENTORY, SHOP_ITEMS } from "../data/shop";
 import { ITEM_ASSETS } from "../data/itemAssets";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface ShopScreenProps {
   diamond: number;
@@ -13,6 +14,7 @@ interface ShopScreenProps {
 }
 
 export function ShopScreen({ diamond, inventory, onBuy, onBack }: ShopScreenProps) {
+  const { t } = useLanguage();
   return (
     <ImageBackground
       source={require("../../assets/bg.png")}
@@ -24,19 +26,19 @@ export function ShopScreen({ diamond, inventory, onBuy, onBack }: ShopScreenProp
           onPress={onBack}
           className="rounded-lg border border-cyan-700 bg-slate-900/90 px-4 py-2 active:bg-slate-800"
         >
-          <Text className="font-bold text-cyan-300">BACK</Text>
+          <Text className="font-bold text-cyan-300">{t.back}</Text>
         </TouchableOpacity>
       </View>
 
       <View className="mb-4 rounded-full border border-cyan-700/60 bg-slate-900/90 px-5 py-2">
         <View className="flex-row items-center">
           <FontAwesome5 name="gem" size={13} color="#67E8F9" />
-          <Text className="ml-2 font-black text-cyan-300">DIAMOND {diamond}</Text>
+          <Text className="ml-2 font-black text-cyan-300">{t.diamond} {diamond}</Text>
         </View>
       </View>
 
       <View className="w-11/12 max-w-2xl rounded-2xl border border-slate-700 bg-slate-900/90 p-4">
-        <Text className="mb-3 text-center text-xl font-black tracking-widest text-cyan-300">SHOP</Text>
+        <Text className="mb-3 text-center text-xl font-black tracking-widest text-cyan-300">{t.shopTitle}</Text>
 
         <View className="gap-3">
           {SHOP_ITEMS.map((item) => {
@@ -53,10 +55,12 @@ export function ShopScreen({ diamond, inventory, onBuy, onBack }: ShopScreenProp
                 <View className="flex-row items-center gap-3">
                   <Image source={ITEM_ASSETS[item.targetItemId]} style={{ width: 30, height: 30 }} resizeMode="contain" />
                   <View>
-                  <Text className="font-black text-slate-100">{item.label}</Text>
-                  <Text className="text-xs font-bold text-slate-400">
-                    보유 수량: {count}/{MAX_ITEM_INVENTORY}
-                  </Text>
+                    <Text className="font-black text-slate-100">
+                      {t.shopItemLabel[item.targetItemId] ?? item.label}
+                    </Text>
+                    <Text className="text-xs font-bold text-slate-400">
+                      {t.stock}: {count}/{MAX_ITEM_INVENTORY}
+                    </Text>
                   </View>
                 </View>
 

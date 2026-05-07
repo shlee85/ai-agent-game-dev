@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Pressable, Text, TouchableOpacity, Animated, ImageBackground, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 import { DIFFICULTY_CONFIG, Difficulty } from "../data/difficulty";
 import { STAGE_CONFIG } from "../data/stages";
@@ -13,6 +15,7 @@ import { HUD } from "../ui/HUD";
 import { BuildMenu, TOWER_OPTIONS } from "../ui/BuildMenu";
 import { TowerMenu } from "../ui/TowerMenu";
 import { ItemShop } from "../ui/ItemShop";
+import { useLanguage } from "../contexts/LanguageContext";
 
 type GameState = "playing" | "game_over" | "wave_clear" | "paused";
 
@@ -51,6 +54,7 @@ export function WaveScreen({
     wave.killGoldMultiplierByDifficulty?.[difficultyLevel] ?? 1;
 
   const [gameState, setGameState] = useState<GameState>("playing");
+  const { t } = useLanguage();
   const [speedMultiplier, setSpeedMultiplier] = useState<number>(1);
   const initialGold = initialGoldOverride ?? difficulty.startGold;
   const [gold, setGold] = useState(initialGold);
@@ -70,11 +74,11 @@ export function WaveScreen({
 
   const handleRestartWaveWithConfirm = () => {
     Alert.alert(
-      "웨이브 다시 시작",
-      "진행 상황이 초기화됩니다. 계속할까요?",
+      t.restartWaveTitle,
+      t.restartWaveMsg,
       [
-        { text: "취소", style: "cancel" },
-        { text: "확인", style: "destructive", onPress: () => onRestartWave() },
+        { text: t.cancel, style: "cancel" },
+        { text: t.confirm, style: "destructive", onPress: () => onRestartWave() },
       ],
       { cancelable: true }
     );
@@ -321,8 +325,13 @@ export function WaveScreen({
             const t = target as EnemyData; // 타입 캐스팅
             towerCooldownsRef.current[towerKey] = towerStats.baseCooldown;
 
-            // 실제로는 레벨별로 데미지를 곱해줘야 함
-            const actualDamage = towerStats.baseDamage * (1 + 0.5 * (towerData.level - 1));
+            // 레벨 및 상성 배율 적용
+            const levelMult = 1 + 0.5 * (towerData.level - 1);
+            const affinityMult =
+              towerStats.affinityEnemyType && towerStats.affinityEnemyType === t.type
+                ? (towerStats.affinityMultiplier ?? 1)
+                : 1;
+            const actualDamage = towerStats.baseDamage * levelMult * affinityMult;
 
             // 타겟 픽셀 좌표 (이펙트용)
             const targetPath = (stage.paths && t.selectedPathIndex !== undefined) ? stage.paths[t.selectedPathIndex] : stage.pathTiles;
@@ -384,7 +393,11 @@ export function WaveScreen({
 
                 const dist = Math.sqrt(Math.pow(eRow - aRow, 2) + Math.pow(eCol - aCol, 2));
                 if (dist <= radius) {
-                  aoeTarget.hp -= actualDamage;
+                  const aoeAffinityMult =
+                    towerStats.affinityEnemyType && towerStats.affinityEnemyType === aoeTarget.type
+                      ? (towerStats.affinityMultiplier ?? 1)
+                      : 1;
+                  aoeTarget.hp -= towerStats.baseDamage * levelMult * aoeAffinityMult;
                   aoeTarget.hitTimer = 0.1;
                 }
               });
@@ -766,7 +779,7 @@ export function WaveScreen({
           className="rounded-xl bg-slate-800/90 px-4 py-2 border border-slate-600 active:bg-slate-700 shadow-md"
           onPress={() => setGameState("paused")}
         >
-          <Text className="font-bold text-slate-300">⚙️ 메뉴</Text>
+          <Text className="font-bold text-slate-300">{t.menu}</Text>
         </TouchableOpacity>
       </View>
 
@@ -797,52 +810,84 @@ export function WaveScreen({
       {/* 게임 오버 / 클리어 팝업 오버레이 */}
       {(gameState === "game_over" || gameState === "wave_clear") && (
         <View className="absolute inset-0 z-50 items-center justify-center bg-slate-950/80" style={{ elevation: 100 }}>
-          <Animated.View 
+          <Animated.View
             style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }], opacity: popupAnim }}
             className="items-center rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl"
           >
+            {/* 등급 배지 */}
+            {(() => {
+              const gradeColor = leakedCount === 0 ? "#10B981" : leakedCount <= 3 ? "#3B82F6" : leakedCount <= 7 ? "#F59E0B" : "#EF4444";
+              const gradeLetter = leakedCount === 0 ? "S" : leakedCount <= 3 ? "A" : leakedCount <= 7 ? "B" : "C";
+              return (
+                <View className="mb-3 items-center">
+                  <View
+                    className="w-14 h-14 rounded-2xl border-2 items-center justify-center"
+                    style={{ borderColor: gradeColor, backgroundColor: gradeColor + "22" }}
+                  >
+                    <Text className="text-3xl font-black" style={{ color: gradeColor }}>{gradeLetter}</Text>
+                  </View>
+                  <Text className="text-[9px] font-bold text-slate-500 mt-0.5 tracking-wider">GRADE</Text>
+                </View>
+              );
+            })()}
+
             <Text className={`text-4xl font-black ${gameState === "game_over" ? "text-red-500" : "text-emerald-400"}`}>
-              {gameState === "game_over" ? "GAME OVER" : "WAVE CLEAR!"}
+              {gameState === "game_over" ? t.gameOver : t.waveClear}
             </Text>
             <Text className="mt-2 text-slate-400 text-base">
               {gameState === "game_over"
-                ? "하트가 모두 소진되었습니다."
-                : waveId === 7
-                  ? "시간 목표를 달성했습니다!"
-                  : "모든 적을 막아냈습니다!"}
+                ? t.gameOverDesc
+                : wave.isTimeObjective
+                  ? t.timeObjectiveClearDesc
+                  : t.waveClearDesc}
             </Text>
 
             <View className="mt-4 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3">
-              <Text className="text-xs font-bold text-slate-400">RESULT REPORT</Text>
-              <Text className="mt-1 text-sm font-bold text-cyan-300">처치 수: {killCount}</Text>
-              <Text className="mt-1 text-sm font-bold text-rose-300">누수 수: {leakedCount}</Text>
-              <Text className="mt-1 text-sm font-bold text-amber-300">
-                획득 골드: {earnedGoldFromKills + (gameState === "wave_clear" ? waveClearGoldReward : 0)}
-              </Text>
-              <Text className="mt-1 text-sm font-bold text-violet-300">
-                획득 보석: {gameState === "wave_clear" ? waveClearDiamondReward : 0}
-              </Text>
-              <Text className="mt-1 text-sm font-bold text-emerald-300">사용 아이템: {usedItemCount}</Text>
+              <Text className="text-xs font-bold text-slate-400 mb-2">{t.resultReport}</Text>
+              <View className="flex-row items-center gap-2 mb-1">
+                <Ionicons name="skull-outline" size={14} color="#67E8F9" />
+                <Text className="text-sm font-bold text-cyan-300">{t.kills}: {killCount}</Text>
+              </View>
+              <View className="flex-row items-center gap-2 mb-1">
+                <Ionicons name="warning-outline" size={14} color="#FDA4AF" />
+                <Text className="text-sm font-bold text-rose-300">{t.leaks}: {leakedCount}</Text>
+              </View>
+              <View className="flex-row items-center gap-2 mb-1">
+                <FontAwesome5 name="coins" size={12} color="#FDE68A" />
+                <Text className="text-sm font-bold text-amber-300">
+                  {t.goldEarned}: {earnedGoldFromKills + (gameState === "wave_clear" ? waveClearGoldReward : 0)}
+                </Text>
+              </View>
+              <View className="flex-row items-center gap-2 mb-1">
+                <FontAwesome5 name="gem" size={12} color="#DDD6FE" />
+                <Text className="text-sm font-bold text-violet-300">
+                  {t.diamondEarned}: {gameState === "wave_clear" ? waveClearDiamondReward : 0}
+                </Text>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="flash-outline" size={14} color="#6EE7B7" />
+                <Text className="text-sm font-bold text-emerald-300">{t.usedItems}: {usedItemCount}</Text>
+              </View>
             </View>
-            
+
             {gameState === "wave_clear" && waveId < 15 && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 className="mt-6 w-full rounded-xl bg-emerald-600 px-8 py-3 border border-emerald-500 active:bg-emerald-700"
                 onPress={() => {
                   onNextWave();
                 }}
               >
-                <Text className="text-slate-100 font-bold text-lg text-center">다음 웨이브로 진행</Text>
+                <Text className="text-slate-100 font-bold text-lg text-center">{t.nextWave}</Text>
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity 
+            <TouchableOpacity
               className={`w-full rounded-xl bg-slate-800 px-8 py-3 border border-slate-600 active:bg-slate-700 ${gameState === "wave_clear" && waveId < 15 ? "mt-3" : "mt-6"}`}
               onPress={() => {
                 onBackToLobby();
               }}
             >
-              <Text className="text-slate-200 font-bold text-lg text-center">로비로 돌아가기</Text>
+              <Text className="text-slate-200 font-bold text-lg text-center">{t.backToLobby}</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
@@ -855,28 +900,28 @@ export function WaveScreen({
             style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }], opacity: popupAnim }}
             className="w-80 items-center rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl"
           >
-            <Text className="text-3xl font-black text-slate-200">일시 정지</Text>
-            <Text className="mt-2 text-slate-400 text-sm">게임을 잠시 멈췄습니다.</Text>
-            
-            <TouchableOpacity 
+            <Text className="text-3xl font-black text-slate-200">{t.pauseTitle}</Text>
+            <Text className="mt-2 text-slate-400 text-sm">{t.pauseDesc}</Text>
+
+            <TouchableOpacity
               className="mt-8 w-full rounded-xl bg-emerald-600 px-8 py-3 border border-emerald-500 active:bg-emerald-700"
               onPress={() => setGameState("playing")}
             >
-              <Text className="text-slate-100 font-bold text-lg text-center">계속 하기</Text>
+              <Text className="text-slate-100 font-bold text-lg text-center">{t.continueGame}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               className="mt-3 w-full rounded-xl bg-amber-600 px-8 py-3 border border-amber-500 active:bg-amber-700"
               onPress={handleRestartWaveWithConfirm}
             >
-              <Text className="text-slate-100 font-bold text-lg text-center">이 웨이브 다시 시작</Text>
+              <Text className="text-slate-100 font-bold text-lg text-center">{t.restartWave}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               className="mt-3 w-full rounded-xl bg-slate-800 px-8 py-3 border border-slate-600 active:bg-slate-700"
               onPress={() => onBackToLobby()}
             >
-              <Text className="text-slate-200 font-bold text-lg text-center">로비로 돌아가기</Text>
+              <Text className="text-slate-200 font-bold text-lg text-center">{t.backToLobby}</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>

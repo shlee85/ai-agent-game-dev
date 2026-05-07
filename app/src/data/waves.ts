@@ -339,30 +339,38 @@ export const WAVE_CONFIG: Record<WaveIdAll, WaveConfig> = {
   },
   12: {
     id: 12,
-    durationSec: 560,
+    // time objective: 200초 생존하면 wave_clear
+    durationSec: 200,
     spawnIntervalSecByDifficulty: {
       easy: 1.0,
       normal: 0.92,
       hard: 0.84,
     },
     enemies: [
-      { type: "guard", weight: 35 },
-      { type: "runner", weight: 65 },
+      { type: "guard", weight: 40 },
+      { type: "runner", weight: 60 },
     ],
     totalSpawnCountByDifficulty: {
-      easy: 260,
-      normal: 320,
-      hard: 380,
+      easy: 200,
+      normal: 217,
+      hard: 238,
     },
+    // kill 골드 0, clear 골드는 마리 수 기반 (avg 7.6 gold/enemy)
     clearGoldRewardByDifficulty: {
-      easy: 310,
-      normal: 400,
-      hard: 490,
+      easy: 1520,
+      normal: 1649,
+      hard: 1809,
     },
     clearDiamondRewardByDifficulty: {
-      easy: 6,
-      normal: 7,
-      hard: 8,
+      easy: 20,
+      normal: 21,
+      hard: 23,
+    },
+    isTimeObjective: true,
+    killGoldMultiplierByDifficulty: {
+      easy: 0,
+      normal: 0,
+      hard: 0,
     },
   },
   13: {

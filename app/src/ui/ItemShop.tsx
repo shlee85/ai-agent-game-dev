@@ -3,6 +3,7 @@ import { View, Text, Pressable, Image } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { ITEM_CONFIG, ItemStats } from "../data/items";
 import { ITEM_ASSETS } from "../data/itemAssets";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface ItemShopProps {
   inventory: Record<string, number>;
@@ -11,11 +12,12 @@ interface ItemShopProps {
 }
 
 export function ItemShop({ inventory, onUseItem, activeItemType }: ItemShopProps) {
+  const { t } = useLanguage();
   const items = Object.values(ITEM_CONFIG);
 
   return (
     <View className="absolute left-4 top-1/2 -translate-y-1/2 items-center gap-3 z-50 bg-slate-900/80 p-2 rounded-2xl border border-slate-700" pointerEvents="box-none">
-      <Text className="text-[10px] font-bold text-slate-400 mb-1">SKILLS</Text>
+      <Text className="text-[10px] font-bold text-slate-400 mb-1">{t.skills}</Text>
       {items.map((item) => {
         const count = inventory[item.id] || 0;
         const canUse = count > 0;
