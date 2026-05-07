@@ -2,6 +2,7 @@
   "expo": {
     "name": "Sentinel Protocol",
     "slug": "sentinel-protocol",
+    "owner": "sehyunglee",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
@@ -27,6 +28,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ca69b5e4-55b0-4e53-9a1f-1870b1b2b9f8"
+      }
     }
   }
 }
