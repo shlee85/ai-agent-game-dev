@@ -10,6 +10,8 @@ import { ENEMY_CONFIG, EnemyType } from "../data/enemies";
 import { SHOP_ITEMS } from "../data/shop";
 import { TOWER_GUIDE, ITEM_GUIDE, ENEMY_GUIDE } from "../data/guideData";
 import { ITEM_ASSETS } from "../data/itemAssets";
+import { TOWER_ASSETS } from "../data/towerAssets";
+import { ENEMY_ASSETS } from "../data/enemyAssets";
 import { getTowerRoleTag, getEnemyThreatTag } from "../data/visualTheme";
 
 type GuideTab = "tower" | "item" | "enemy";
@@ -85,13 +87,29 @@ export function GuideScreen({ onBack }: { onBack: () => void }) {
                 key={stats.id}
                 className="mb-4 rounded-2xl border border-slate-700 bg-slate-900/95 p-4"
               >
-                {/* 타워 헤더 — 게임 내 표현과 동일한 색상 원 + 역할 태그 */}
+                {/* 타워 헤더 — 게임 내 TOWER_ASSETS 이미지 사용 */}
                 <View className="flex-row items-center gap-3 mb-3">
                   <View
-                    className="w-12 h-12 rounded-full items-center justify-center border-2 border-slate-500"
-                    style={{ backgroundColor: stats.color }}
+                    className="w-12 h-12 rounded-xl items-center justify-center border-2 relative overflow-hidden"
+                    style={{ backgroundColor: stats.color + "22", borderColor: stats.color }}
                   >
-                    <Text className="text-sm font-black text-slate-950">{getTowerRoleTag(stats.id)}</Text>
+                    <View
+                      className="absolute inset-0 rounded-full"
+                      style={{ backgroundColor: stats.color, opacity: 0.15 }}
+                    />
+                    <Image
+                      source={TOWER_ASSETS[stats.id]}
+                      style={{ width: 40, height: 40 }}
+                      resizeMode="contain"
+                    />
+                    <View
+                      className="absolute top-0 left-0 rounded px-1"
+                      style={{ backgroundColor: "rgba(2,6,23,0.82)", borderWidth: 1, borderColor: stats.color }}
+                    >
+                      <Text className="text-[8px] font-black" style={{ color: stats.color }}>
+                        {getTowerRoleTag(stats.id)}
+                      </Text>
+                    </View>
                   </View>
                   <View className="flex-1">
                     <Text className="text-base font-black text-white">
@@ -223,13 +241,27 @@ export function GuideScreen({ onBack }: { onBack: () => void }) {
                 key={enemyId}
                 className="mb-4 rounded-2xl border border-slate-700 bg-slate-900/95 p-4"
               >
-                {/* 적 헤더 — 게임 내 표현과 동일한 색상 원 + 위협 태그 */}
+                {/* 적 헤더 — 게임 내 ENEMY_ASSETS 이미지 사용 */}
                 <View className="flex-row items-center gap-3 mb-3">
                   <View
-                    className="w-12 h-12 rounded-full items-center justify-center border-2 border-slate-500"
-                    style={{ backgroundColor: enemy.color }}
+                    className="w-12 h-12 rounded-xl items-center justify-center border-2 relative overflow-hidden"
+                    style={{ backgroundColor: "rgba(15,23,42,0.55)", borderColor: "#7F1D1D" }}
                   >
-                    <Text className="text-[10px] font-black text-slate-950">{getEnemyThreatTag(enemyId)}</Text>
+                    <View
+                      className="absolute inset-0"
+                      style={{ backgroundColor: enemy.color, opacity: 0.12 }}
+                    />
+                    <Image
+                      source={ENEMY_ASSETS[enemyId]}
+                      style={{ width: 36, height: 36 }}
+                      resizeMode="contain"
+                    />
+                    <Text
+                      className="absolute"
+                      style={{ top: -2, fontSize: 7, fontWeight: "900", color: "#fecdd3", letterSpacing: 0.5 }}
+                    >
+                      {getEnemyThreatTag(enemyId)}
+                    </Text>
                   </View>
                   <View className="flex-1">
                     <Text className="text-base font-black text-white">
