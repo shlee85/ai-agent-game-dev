@@ -484,3 +484,26 @@ PNG 생성 및 후보-B 전체 구현 완료 내역:
 - Wave 20: 파이널 듀얼패스, A=21/B=22 — 전 유닛 (멀티패스)
 
 각 맵에 ASCII 그리드(9×16) + 요약 테이블 추가. 문서 제목도 `Wave 1~15` → `Wave 1~20`으로 변경.
+
+## 질문: 좋아 여기서 이제 beta5.0종료 하고 새롭게 v1.0.md 파일을 생성해주고 v1.0부터는 새로 생성된 md문서에서 진행할께.
+문서 넘어가면서 정리할거 있으면 정리해서 해당 문서로 옮기든지
+
+[CLAUDE 답변]
+Talk5.0.md 마감. TalkV1.0.md 신규 생성 후 현재 상태 요약 이전.
+
+---
+
+## ✅ Beta 5.0 마감 (2026-05-07)
+
+**git 커밋 기준: `17d502c`**
+
+### 완료된 모든 항목
+- SF 로딩화면 (LoadingScreen.tsx)
+- 후보-A: Wave 8~15 밸런스, Wave 12 Time Objective, 타워/적 상성 시스템
+- 후보-C: 결과화면 고도화(등급), 로비 난이도 진행도, TowerMenu 스탯 강화
+- 언어 시스템 (EN/KR 토글, LanguageContext, i18n 전 화면 적용)
+- 설명서 화면 (GuideScreen — 타워/아이템/적 탭, 실제 스프라이트, 장단점)
+- 후보-B: Volt Striker + Phantom Crawler + Wave 16~20 + v1.0 배지
+- StageMap.md Wave 16~20 ASCII 맵 추가
+
+**이후 대화는 `TalkV1.0.md`에서 진행.**
