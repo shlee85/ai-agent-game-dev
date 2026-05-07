@@ -471,3 +471,16 @@ PNG 생성 및 후보-B 전체 구현 완료 내역:
    - `LobbyScreen.tsx`: TOTAL_WAVES=20, 웨이브 카드 20개, 진행도 X/20, wave 16~20 색상, 배지 v1.0
    - `App.tsx`: onNextWave 상한 20으로 변경
 7. TypeScript 타입 검사 통과 (오류 없음)
+
+## 질문: 생성된 맵 정보는 StageMap.md에 업데이트 해줘
+
+[CLAUDE 답변]
+`.ai/StageMap.md` Wave 16~20 섹션 추가 완료.
+
+- Wave 16: 역C형, 타일 24개 — 팬텀 데뷔
+- Wave 17: ロ형 사각 루프, 타일 25개 — 팬텀+가드
+- Wave 18: H형 듀얼패스, A=16/B=17 — 러너+팬텀 (멀티패스)
+- Wave 19: 역S형, 타일 25개 — Time Objective 220초
+- Wave 20: 파이널 듀얼패스, A=21/B=22 — 전 유닛 (멀티패스)
+
+각 맵에 ASCII 그리드(9×16) + 요약 테이블 추가. 문서 제목도 `Wave 1~15` → `Wave 1~20`으로 변경.
