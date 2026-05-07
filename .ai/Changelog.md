@@ -4,6 +4,35 @@
 
 ---
 
+## [2026-05-07] v1.0 단계2 — 튜토리얼·Wave 20 엔딩·APK 빌드 설정
+
+### 상세 변경 사항 요약
+
+1. **튜토리얼 오버레이 (WaveScreen.tsx)**
+   - Wave 1 첫 진입 시 `AsyncStorage("tutorialShown")` 미존재 시 자동 표시
+   - 3단계 슬라이드: Build Towers / Upgrade & Sell / Use Items (EN/KR 지원)
+   - 진행 도트 UI + Spring 애니메이션
+   - 마지막 단계 "Got it!" 클릭 시 `tutorialShown = "1"` 저장 → 이후 표시 안 함
+
+2. **Wave 20 최종 클리어 엔딩 화면 (WaveScreen.tsx)**
+   - `waveId === 20 && gameState === "wave_clear"` 조건 시 골든 팝업 표시
+   - 황금 별(★★★) 장식 + 글로우 텍스트 (`allWavesCleared`, `allWavesClearedDesc`)
+   - FINAL REPORT 섹션: kills/leaks/gold/diamond 통계 표시
+   - "Back to Lobby" 버튼만 제공 (다음 웨이브 없음)
+
+3. **i18n 문자열 추가 (index.ts)**
+   - `tutorialTitle`, `tutorialNext`, `tutorialGotIt`, `tutorialStep[3]` (EN/KR)
+   - `allWavesCleared`, `allWavesClearedDesc`, `finalReport` (EN/KR)
+
+4. **APK 빌드 설정**
+   - `app/eas.json` 신규 생성 — preview(APK) / production(AAB) 프로파일
+   - `app/app.json` — `android.package: "com.shlee.sentinelprotocol"`, `versionCode: 1` 추가
+
+5. **Bug Fix: Next Wave 조건 수정**
+   - 팝업 내 "Next Wave" 버튼 및 스타일 분기에서 `waveId < 15` → `waveId < 20`
+
+---
+
 ## [2026-05-07] v1.0 단계1 — 사운드 시스템·설정창·Wave 20 검증
 
 ### 상세 변경 사항 요약

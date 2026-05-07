@@ -72,6 +72,8 @@ export function WaveScreen({
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [activeItem, setActiveItem] = useState<ItemStats | null>(null);
   const [flashColor, setFlashColor] = useState<string | null>(null); // 글로벌 이펙트용
+  const [tutorialStepIdx, setTutorialStepIdx] = useState<number | null>(null);
+  const tutorialAnim = useRef(new Animated.Value(0)).current;
 
   const handleRestartWaveWithConfirm = () => {
     Alert.alert(
@@ -180,6 +182,22 @@ export function WaveScreen({
       soundManager.unloadSfx();
     };
   }, []);
+
+  // 튜토리얼: Wave 1 첫 진입 시에만 표시
+  useEffect(() => {
+    if (waveId !== 1) return;
+    AsyncStorage.getItem("tutorialShown").then((val) => {
+      if (!val) setTutorialStepIdx(0);
+    });
+  }, [waveId]);
+
+  useEffect(() => {
+    if (tutorialStepIdx !== null) {
+      Animated.spring(tutorialAnim, { toValue: 1, friction: 8, tension: 40, useNativeDriver: true }).start();
+    } else {
+      tutorialAnim.setValue(0);
+    }
+  }, [tutorialStepIdx, tutorialAnim]);
 
   useEffect(() => {
     lastTimeRef.current = Date.now();
@@ -834,8 +852,58 @@ export function WaveScreen({
         </View>
       )}
 
+      {/* Wave 20 최종 클리어 엔딩 팝업 */}
+      {waveId === 20 && gameState === "wave_clear" && (
+        <View className="absolute inset-0 z-50 items-center justify-center bg-amber-950/80" style={{ elevation: 100 }}>
+          <Animated.View
+            style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [60, 0] }) }], opacity: popupAnim, backgroundColor: "#0F0A00", borderWidth: 2, borderColor: "#F59E0B", minWidth: 320 }}
+            className="items-center rounded-2xl p-8 shadow-2xl"
+          >
+            {/* 골든 별 장식 */}
+            <View className="flex-row gap-2 mb-3">
+              {["★", "★", "★"].map((s, i) => (
+                <Text key={i} className="text-3xl" style={{ color: "#F59E0B" }}>{s}</Text>
+              ))}
+            </View>
+
+            <Text className="text-4xl font-black text-amber-400 text-center tracking-wider" style={{ textShadowColor: "#F59E0B", textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 20 }}>
+              {t.allWavesCleared}
+            </Text>
+            <Text className="mt-2 text-amber-200 text-base text-center">{t.allWavesClearedDesc}</Text>
+
+            <View className="mt-5 w-full rounded-xl px-4 py-3" style={{ backgroundColor: "#1C1000", borderWidth: 1, borderColor: "#92400E" }}>
+              <Text className="text-xs font-bold text-amber-500 mb-2 tracking-widest">{t.finalReport}</Text>
+              <View className="flex-row items-center gap-2 mb-1">
+                <Ionicons name="skull-outline" size={14} color="#67E8F9" />
+                <Text className="text-sm font-bold text-cyan-300">{t.kills}: {killCount}</Text>
+              </View>
+              <View className="flex-row items-center gap-2 mb-1">
+                <Ionicons name="warning-outline" size={14} color="#FDA4AF" />
+                <Text className="text-sm font-bold text-rose-300">{t.leaks}: {leakedCount}</Text>
+              </View>
+              <View className="flex-row items-center gap-2 mb-1">
+                <FontAwesome5 name="coins" size={12} color="#FDE68A" />
+                <Text className="text-sm font-bold text-amber-300">{t.goldEarned}: {earnedGoldFromKills + waveClearGoldReward}</Text>
+              </View>
+              <View className="flex-row items-center gap-2">
+                <FontAwesome5 name="gem" size={12} color="#DDD6FE" />
+                <Text className="text-sm font-bold text-violet-300">{t.diamondEarned}: {waveClearDiamondReward}</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              className="mt-6 w-full rounded-xl px-8 py-3 active:opacity-80"
+              style={{ backgroundColor: "#92400E", borderWidth: 1, borderColor: "#F59E0B" }}
+              onPress={() => onBackToLobby()}
+            >
+              <Text className="text-amber-200 font-bold text-lg text-center">{t.backToLobby}</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      )}
+
       {/* 게임 오버 / 클리어 팝업 오버레이 */}
-      {(gameState === "game_over" || gameState === "wave_clear") && (
+      {(gameState === "game_over" || (gameState === "wave_clear" && waveId !== 20)) && (
         <View className="absolute inset-0 z-50 items-center justify-center bg-slate-950/80" style={{ elevation: 100 }}>
           <Animated.View
             style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }], opacity: popupAnim }}
@@ -897,7 +965,7 @@ export function WaveScreen({
               </View>
             </View>
 
-            {gameState === "wave_clear" && waveId < 15 && (
+            {gameState === "wave_clear" && waveId < 20 && (
               <TouchableOpacity
                 className="mt-6 w-full rounded-xl bg-emerald-600 px-8 py-3 border border-emerald-500 active:bg-emerald-700"
                 onPress={() => {
@@ -909,12 +977,64 @@ export function WaveScreen({
             )}
 
             <TouchableOpacity
-              className={`w-full rounded-xl bg-slate-800 px-8 py-3 border border-slate-600 active:bg-slate-700 ${gameState === "wave_clear" && waveId < 15 ? "mt-3" : "mt-6"}`}
+              className={`w-full rounded-xl bg-slate-800 px-8 py-3 border border-slate-600 active:bg-slate-700 ${gameState === "wave_clear" && waveId < 20 ? "mt-3" : "mt-6"}`}
               onPress={() => {
                 onBackToLobby();
               }}
             >
               <Text className="text-slate-200 font-bold text-lg text-center">{t.backToLobby}</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      )}
+
+      {/* 튜토리얼 오버레이 */}
+      {tutorialStepIdx !== null && (
+        <View className="absolute inset-0 z-[200] items-center justify-center bg-slate-950/85" style={{ elevation: 200 }}>
+          <Animated.View
+            style={{ transform: [{ scale: tutorialAnim }], opacity: tutorialAnim, maxWidth: 340 }}
+            className="w-11/12 rounded-2xl border border-cyan-700 bg-slate-900 p-7"
+          >
+            {/* 진행 도트 */}
+            <View className="flex-row justify-center gap-2 mb-4">
+              {t.tutorialStep.map((_, i) => (
+                <View
+                  key={i}
+                  className="rounded-full"
+                  style={{
+                    width: i === tutorialStepIdx ? 20 : 8,
+                    height: 8,
+                    backgroundColor: i === tutorialStepIdx ? "#22D3EE" : "#334155",
+                  }}
+                />
+              ))}
+            </View>
+
+            <Text className="text-[10px] font-bold text-cyan-500 tracking-widest mb-1">
+              {t.tutorialTitle}  {tutorialStepIdx + 1}/{t.tutorialStep.length}
+            </Text>
+            <Text className="text-xl font-black text-slate-100 mb-3">
+              {t.tutorialStep[tutorialStepIdx].title}
+            </Text>
+            <Text className="text-sm text-slate-300 leading-5">
+              {t.tutorialStep[tutorialStepIdx].desc}
+            </Text>
+
+            <TouchableOpacity
+              className="mt-6 w-full rounded-xl bg-cyan-600 py-3 border border-cyan-500 active:bg-cyan-700"
+              onPress={async () => {
+                if (tutorialStepIdx < t.tutorialStep.length - 1) {
+                  tutorialAnim.setValue(0);
+                  setTutorialStepIdx(tutorialStepIdx + 1);
+                } else {
+                  await AsyncStorage.setItem("tutorialShown", "1");
+                  setTutorialStepIdx(null);
+                }
+              }}
+            >
+              <Text className="text-slate-100 font-bold text-base text-center">
+                {tutorialStepIdx < t.tutorialStep.length - 1 ? t.tutorialNext : t.tutorialGotIt}
+              </Text>
             </TouchableOpacity>
           </Animated.View>
         </View>

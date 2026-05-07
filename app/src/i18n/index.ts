@@ -72,6 +72,15 @@ export interface I18nStrings {
   guideBaseHp: string;
   guideSpeed: string;
   guideReward: string;
+  // Tutorial
+  tutorialTitle: string;
+  tutorialNext: string;
+  tutorialGotIt: string;
+  tutorialStep: Array<{ title: string; desc: string }>;
+  // Wave 20 ending
+  allWavesCleared: string;
+  allWavesClearedDesc: string;
+  finalReport: string;
 }
 
 export const STRINGS: Record<Lang, I18nStrings> = {
@@ -157,6 +166,17 @@ export const STRINGS: Record<Lang, I18nStrings> = {
     guideBaseHp: "Base HP",
     guideSpeed: "Speed",
     guideReward: "Kill Reward",
+    tutorialTitle: "HOW TO PLAY",
+    tutorialNext: "Next",
+    tutorialGotIt: "Got it!",
+    tutorialStep: [
+      { title: "Build Towers", desc: "Tap an empty tile on the map to open the build menu. Place towers to intercept enemies!" },
+      { title: "Upgrade & Sell", desc: "Tap a placed tower to upgrade its stats or sell it for gold." },
+      { title: "Use Items", desc: "Tap an item icon at the bottom to activate it. Some need a target tile." },
+    ],
+    allWavesCleared: "ALL WAVES CLEARED",
+    allWavesClearedDesc: "You have defended the Space Union!",
+    finalReport: "FINAL REPORT",
   },
   kr: {
     tagline: "우주 연합을 수호하라",
@@ -240,5 +260,16 @@ export const STRINGS: Record<Lang, I18nStrings> = {
     guideBaseHp: "기본 체력",
     guideSpeed: "이동 속도",
     guideReward: "처치 보상",
+    tutorialTitle: "게임 방법",
+    tutorialNext: "다음",
+    tutorialGotIt: "알겠어요!",
+    tutorialStep: [
+      { title: "타워 설치", desc: "맵의 빈 타일을 탭하면 건설 메뉴가 열립니다. 타워를 배치해 적을 막으세요!" },
+      { title: "업그레이드 & 판매", desc: "설치된 타워를 탭하면 스탯을 업그레이드하거나 골드로 판매할 수 있습니다." },
+      { title: "아이템 사용", desc: "하단 아이템 아이콘을 탭해 발동하세요. 일부 아이템은 타겟 타일 지정이 필요합니다." },
+    ],
+    allWavesCleared: "모든 웨이브 클리어",
+    allWavesClearedDesc: "우주 연합을 완벽히 수호했습니다!",
+    finalReport: "최종 보고서",
   },
 };
