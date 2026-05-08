@@ -4,6 +4,28 @@
 
 ---
 
+## [2026-05-08] 3D 패키지 제거 및 로컬 APK 빌드 성공
+
+### 상세 변경 사항 요약
+
+1. **미사용 3D 패키지 제거 (package.json)**
+   - `expo-three`, `expo-gl`, `three`, `three-stdlib`, `@types/three` 제거
+   - 원인: `expo-file-system` 13.2.1 구버전 의존성이 로컬 Gradle 빌드를 막고 있었음
+   - 제거 후 `expo-file-system` 구버전 의존성 사라져 빌드 통과
+
+2. **미사용 화면 정리 (App.tsx)**
+   - `Phase0Screen`, `Phase1Screen` import 및 렌더링 코드 제거
+   - LobbyScreen에서 해당 화면으로 이동하는 경로 없어 완전 미사용 상태였음
+   - `currentScreen` 타입에서 `"phase0"`, `"phase1"` 제거
+
+3. **로컬 APK 빌드 성공**
+   - `expo prebuild --platform android --clean` → android/ 재생성
+   - `gradle.properties`에 `org.gradle.unsafe.isolated-projects=false` + `org.gradle.configuration-cache=false` 추가 (autolinking 호환)
+   - `./gradlew assembleRelease` → `app-release.apk` (74MB) 생성 성공
+   - 실기기 설치 및 동작 확인 완료
+
+---
+
 ## [2026-05-07] v1.0 단계2 — 튜토리얼·Wave 20 엔딩·APK 빌드 설정
 
 ### 상세 변경 사항 요약

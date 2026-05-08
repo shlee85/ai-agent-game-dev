@@ -8,8 +8,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LanguageProvider } from "./src/contexts/LanguageContext";
 import { WaveScreen } from "./src/screens/WaveScreen";
 import { LobbyScreen } from "./src/screens/LobbyScreen";
-import { Phase0Screen } from "./src/screens/Phase0Screen";
-import { Phase1Screen } from "./src/screens/Phase1Screen";
 import { ShopScreen } from "./src/screens/ShopScreen";
 import { GuideScreen } from "./src/screens/GuideScreen";
 import { LoadingScreen } from "./src/screens/LoadingScreen";
@@ -21,7 +19,7 @@ const LOADING_MIN_MS = 2500;
 
 export default function App() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [currentScreen, setCurrentScreen] = useState<"lobby" | "wave" | "phase0" | "phase1" | "shop" | "guide">("lobby");
+  const [currentScreen, setCurrentScreen] = useState<"lobby" | "wave" | "shop" | "guide">("lobby");
   const [selectedWave, setSelectedWave] = useState<WaveId>(1);
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("normal");
   const [resetKey, setResetKey] = useState<number>(0);
@@ -182,12 +180,8 @@ export default function App() {
             onBuy={handleBuyShopItem}
             onBack={() => setCurrentScreen("lobby")}
           />
-        ) : currentScreen === "guide" ? (
-          <GuideScreen onBack={() => setCurrentScreen("lobby")} />
-        ) : currentScreen === "phase0" ? (
-          <Phase0Screen onBack={() => setCurrentScreen("lobby")} />
         ) : (
-          <Phase1Screen onBack={() => setCurrentScreen("lobby")} />
+          <GuideScreen onBack={() => setCurrentScreen("lobby")} />
         )}
       </View>
     </LanguageProvider>
