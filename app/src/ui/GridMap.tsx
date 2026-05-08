@@ -446,6 +446,34 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                           justifyContent: "center",
                         }}
                       >
+                        {/* Lv3: 바깥 링 추가 (시안 글로우) */}
+                        {tower.level >= 3 && (
+                          <View
+                            style={{
+                              position: "absolute",
+                              width: tileSize * 1.12,
+                              height: tileSize * 1.12,
+                              borderRadius: 999,
+                              borderWidth: 2.5,
+                              borderColor: "#22d3ee",
+                              opacity: 0.7 + 0.3 * Math.sin(nowMs / 300),
+                            }}
+                          />
+                        )}
+                        {/* Lv2+: 골드 외곽 링 */}
+                        {tower.level >= 2 && (
+                          <View
+                            style={{
+                              position: "absolute",
+                              width: tileSize * 1.04,
+                              height: tileSize * 1.04,
+                              borderRadius: 999,
+                              borderWidth: tower.level >= 3 ? 2 : 1.5,
+                              borderColor: tower.level >= 3 ? "#22d3ee" : "#fbbf24",
+                              opacity: tower.level >= 3 ? 0.9 : 0.75,
+                            }}
+                          />
+                        )}
                         <View
                           style={{
                             position: "absolute",
@@ -462,9 +490,9 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                             width: tileSize * 0.88,
                             height: tileSize * 0.88,
                             borderRadius: 999,
-                            borderWidth: 1.5,
-                            borderColor: tower.color || "#67e8f9",
-                            opacity: 0.6,
+                            borderWidth: tower.level >= 3 ? 3 : tower.level >= 2 ? 2.5 : 1.5,
+                            borderColor: tower.level >= 3 ? "#22d3ee" : tower.level >= 2 ? "#fbbf24" : (tower.color || "#67e8f9"),
+                            opacity: tower.level >= 2 ? 1.0 : 0.6,
                           }}
                         />
                         <View
@@ -516,24 +544,45 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                             {getTowerRoleTag(tower.type)}
                           </Text>
                         </View>
-                        {tower.level >= 2 && (
+                        {tower.level === 2 && (
                           <View
                             style={{
                               position: "absolute",
-                              bottom: -2,
-                              right: -2,
-                              backgroundColor: "rgba(251, 191, 36, 0.95)",
-                              borderWidth: 1,
+                              bottom: -4,
+                              right: -4,
+                              backgroundColor: "#fbbf24",
+                              borderWidth: 1.5,
                               borderColor: "#fef3c7",
                               borderRadius: 999,
-                              width: tileSize * 0.24,
-                              height: tileSize * 0.24,
+                              width: tileSize * 0.30,
+                              height: tileSize * 0.30,
                               alignItems: "center",
                               justifyContent: "center",
                             }}
                           >
-                            <Text style={{ color: "#111827", fontWeight: "900", fontSize: tileSize * 0.13 }}>
-                              U
+                            <Text style={{ color: "#111827", fontWeight: "900", fontSize: tileSize * 0.16 }}>
+                              2
+                            </Text>
+                          </View>
+                        )}
+                        {tower.level >= 3 && (
+                          <View
+                            style={{
+                              position: "absolute",
+                              bottom: -4,
+                              right: -4,
+                              backgroundColor: "#06b6d4",
+                              borderWidth: 2,
+                              borderColor: "#e0f2fe",
+                              borderRadius: 5,
+                              paddingHorizontal: tileSize * 0.04,
+                              paddingVertical: tileSize * 0.02,
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Text style={{ color: "#fff", fontWeight: "900", fontSize: tileSize * 0.14, letterSpacing: 0.5 }}>
+                              MAX
                             </Text>
                           </View>
                         )}

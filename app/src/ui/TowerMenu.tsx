@@ -36,15 +36,35 @@ export function TowerMenu({ towerData, gold, onUpgrade, onSell, onClose }: Tower
 
         {/* 타워 정보 */}
         <View className="flex-row items-center flex-1">
-          <View style={{ backgroundColor: towerData.color }} className="mr-3 h-10 w-10 items-center justify-center rounded-full border-2 border-slate-500">
+          <View
+            style={{
+              backgroundColor: towerData.color,
+              borderWidth: towerData.level >= 3 ? 3 : towerData.level >= 2 ? 2.5 : 2,
+              borderColor: towerData.level >= 3 ? "#22d3ee" : towerData.level >= 2 ? "#fbbf24" : "#64748b",
+            }}
+            className="mr-3 h-10 w-10 items-center justify-center rounded-full"
+          >
             <Text className="text-[10px] font-black text-slate-950">{getTowerRoleTag(towerData.type)}</Text>
-            {towerData.level === 2 && <Text className="absolute -bottom-1 -right-1 text-[10px] font-bold text-white">U</Text>}
-            {towerData.level >= 3 && <Text className="absolute -bottom-1 -right-1 text-[10px] font-bold text-yellow-300">MAX</Text>}
+            {towerData.level === 2 && (
+              <View style={{ position: "absolute", bottom: -5, right: -5, backgroundColor: "#fbbf24", borderRadius: 999, borderWidth: 1.5, borderColor: "#fef3c7", width: 16, height: 16, alignItems: "center", justifyContent: "center" }}>
+                <Text style={{ color: "#111827", fontWeight: "900", fontSize: 10 }}>2</Text>
+              </View>
+            )}
+            {towerData.level >= 3 && (
+              <View style={{ position: "absolute", bottom: -6, right: -10, backgroundColor: "#06b6d4", borderRadius: 4, borderWidth: 1.5, borderColor: "#e0f2fe", paddingHorizontal: 3, paddingVertical: 1 }}>
+                <Text style={{ color: "#fff", fontWeight: "900", fontSize: 9 }}>MAX</Text>
+              </View>
+            )}
           </View>
           <View>
             <View className="flex-row items-center gap-1">
               <Text className="text-base font-bold text-white">{t.towerName[towerData.type] ?? stats.name}</Text>
-              <Text className="text-base font-bold text-yellow-400">Lv.{towerData.level}</Text>
+              <Text
+                style={{ color: towerData.level >= 3 ? "#22d3ee" : towerData.level >= 2 ? "#fbbf24" : "#94a3b8" }}
+                className="text-base font-bold"
+              >
+                Lv.{towerData.level}
+              </Text>
             </View>
             <Text className="text-[10px] font-black tracking-wider text-cyan-300/90">
               {getTowerRoleTag(towerData.type)} | {t.roleLabel[towerData.type] ?? towerData.type}
