@@ -586,14 +586,42 @@ git commit부터 할까?
 타워를 업그레이드 2단계까지만 되잖아? 3단계로 늘리고, 적도 방어에 특화된 놈을 하나 만들자 어때?
 만약에 그렇게 할거면 각가의 md에 업데이트를 해.
 
-[CLAUDE 답변]
+[CLAUDE 답변 — 완료]
 
-좋아, 순서대로 진행할게.
+모두 완료됐어. 커밋 순서대로 정리해줄게.
 
-1. **git commit** (3D 패키지 제거, App.tsx 정리) → Changelog.md 최신 기록 상단 추가
-2. **에셋 교체** — Python Pillow로 더 나은 스프라이트 생성 (SF 컨셉, 더 세밀한 디테일)
-3. **타워 3단계 업그레이드** — 현재 Lv1→2→3에서 Lv1→2→3→4로 확장
-4. **신규 적: 방어 특화** — 고HP·고방어·느린 속도, 슬로우 면역 + 폭발 저항 타입
-5. **GamePlan.md, WavePlan.md 업데이트**
+---
 
-지금 바로 시작할게.
+### 커밋 1: `6547bbf` — 타워 3단계 업그레이드 · 시즈 골렘 · 데드코드 제거
+
+**타워 3단계 업그레이드:**
+- `app/src/ui/TowerMenu.tsx`: `isMaxLevel = level >= 3`으로 변경
+- 2차 업그레이드 비용 = 1차 × 1.5배
+- 판매가 = 총 투자(건설+업그레이드 누적) × 0.5
+- 레벨 배지: Lv2 = `U` (흰색) / Lv3 = `MAX` (노란색)
+
+**신규 적: 시즈 골렘 (Siege Golem):**
+- 기본 체력 350, 이동 속도 0.45, 처치 보상 28g
+- AOE 저항 60% (스플래시 40%만 받음), 슬로우 면역
+- Wave 10(10%) / 13(15%) / 15(20%) / 17(25%) / 20(25%) 등장
+- 크라이오 필드 상성 변경: Guard ×1.3 → Golem ×1.4
+- `enemies.ts`, `enemyAssets.ts`, `guideData.ts`, `i18n`, `waves.ts`, `WaveScreen.tsx` 반영
+- `enemy_golem.png` (256×256 RGBA) — 육각 석재 쉘 + 호박색 코어 생성
+
+**데드코드 제거:**
+- `Phase0Screen.tsx`, `Phase1Screen.tsx` 삭제
+
+---
+
+### 커밋 2: `d9be328` — GamePlan.md / WavePlan.md 업데이트
+
+- `GamePlan.md`: Beta 5.0 섹션 추가 (타워 3단계 정책표, Golem 스펙표)
+- `WavePlan.md`: 공통 기준에 phantom/golem 타입 추가, Wave 8~15 표에 Golem 등장 반영, Wave 16~20 상세 섹션 신규 추가
+
+---
+
+### 커밋 3: `97eb86b` — 타워·적 스프라이트 전면 재생성
+
+Python Pillow로 256×256 RGBA 8종 전부 재생성:
+- **타워**: Pulse Lancer(청록 저격포), Nova Cannon(이중 포신), Cryo Field(6방향 얼음 결정), Volt Striker(삼각 핀 + 보라 번개)
+- **적**: Guard Shell(청록 중장갑 오각형), Runner Drone(날개 스윕 오렌지), Phantom Crawler(반투명 보라 유령), Siege Golem(육각 석재 + 호박색 코어 재생성)
