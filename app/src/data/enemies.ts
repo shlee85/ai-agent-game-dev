@@ -1,4 +1,4 @@
-export type EnemyType = "runner" | "guard" | "phantom";
+export type EnemyType = "runner" | "guard" | "phantom" | "golem";
 
 export interface EnemyStats {
   id: EnemyType;
@@ -9,6 +9,7 @@ export interface EnemyStats {
   color: string;
   size: number; // 1.0이 1타일 크기
   immuneToSlow?: boolean;
+  aoeResistance?: number; // 1.0 = 풀 데미지, 0.4 = AOE 데미지 40%만 받음
 }
 
 export const ENEMY_CONFIG: Record<EnemyType, EnemyStats> = {
@@ -39,5 +40,16 @@ export const ENEMY_CONFIG: Record<EnemyType, EnemyStats> = {
     color: "#8B5CF6",
     size: 0.5,
     immuneToSlow: true,
+  },
+  golem: {
+    id: "golem",
+    name: "시즈 골렘 (Siege Golem)",
+    baseHp: 350,
+    baseSpeed: 0.45,
+    killReward: 28,
+    color: "#78716C",
+    size: 0.82,
+    immuneToSlow: true,
+    aoeResistance: 0.4,
   },
 };

@@ -18,14 +18,16 @@ export function TowerMenu({ towerData, gold, onUpgrade, onSell, onClose }: Tower
   const stats = TOWER_CONFIG[towerData.type];
   if (!stats) return null;
 
-  const isMaxLevel = towerData.level >= 2;
-  const upgradeCost = stats.upgradeCost;
-  const canAffordUpgrade = gold >= upgradeCost;
+  const isMaxLevel = towerData.level >= 3;
+  const upgradeCost1 = stats.upgradeCost;
+  const upgradeCost2 = Math.floor(stats.upgradeCost * 1.5);
+  const currentUpgradeCost = towerData.level === 1 ? upgradeCost1 : upgradeCost2;
+  const canAffordUpgrade = gold >= currentUpgradeCost;
 
   const attackTypeLabel = stats.attackType === "aoe" ? "AOE" : stats.attackType === "slow" ? "SLOW" : "SINGLE";
   const attackTypeColor = stats.attackType === "aoe" ? "#F97316" : stats.attackType === "slow" ? "#06B6D4" : "#3B82F6";
 
-  const totalInvested = stats.cost + (towerData.level >= 2 ? upgradeCost : 0);
+  const totalInvested = stats.cost + (towerData.level >= 2 ? upgradeCost1 : 0) + (towerData.level >= 3 ? upgradeCost2 : 0);
   const refundAmount = Math.floor(totalInvested * 0.7);
 
   return (
@@ -36,7 +38,8 @@ export function TowerMenu({ towerData, gold, onUpgrade, onSell, onClose }: Tower
         <View className="flex-row items-center flex-1">
           <View style={{ backgroundColor: towerData.color }} className="mr-3 h-10 w-10 items-center justify-center rounded-full border-2 border-slate-500">
             <Text className="text-[10px] font-black text-slate-950">{getTowerRoleTag(towerData.type)}</Text>
-            {towerData.level >= 2 && <Text className="absolute -bottom-1 -right-1 text-[10px] font-bold text-white">U</Text>}
+            {towerData.level === 2 && <Text className="absolute -bottom-1 -right-1 text-[10px] font-bold text-white">U</Text>}
+            {towerData.level >= 3 && <Text className="absolute -bottom-1 -right-1 text-[10px] font-bold text-yellow-300">MAX</Text>}
           </View>
           <View>
             <View className="flex-row items-center gap-1">
@@ -83,7 +86,7 @@ export function TowerMenu({ towerData, gold, onUpgrade, onSell, onClose }: Tower
           <Pressable
             onPress={() => {
               if (!isMaxLevel && canAffordUpgrade) {
-                onUpgrade(upgradeCost);
+                onUpgrade(currentUpgradeCost);
               }
             }}
             className={`items-center justify-center rounded-xl border p-2 w-16 h-12 ${
@@ -99,7 +102,7 @@ export function TowerMenu({ towerData, gold, onUpgrade, onSell, onClose }: Tower
               <View className="flex-row items-center">
                 <FontAwesome5 name="coins" size={8} color={canAffordUpgrade ? "#FBBF24" : "#F87171"} className="mr-0.5" />
                 <Text className={`text-[10px] font-bold ${canAffordUpgrade ? "text-yellow-400" : "text-red-400"}`}>
-                  -{upgradeCost}
+                  -{currentUpgradeCost}
                 </Text>
               </View>
             )}

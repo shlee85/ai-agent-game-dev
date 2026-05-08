@@ -165,4 +165,18 @@ export const ENEMY_GUIDE: Record<string, GuideEntry> = {
       kr: "방어 보너스 없음 · 볼트 스트라이커 상성에 취약(×1.3)",
     },
   },
+  golem: {
+    summary: {
+      en: "Armored titan with massive HP. Extremely slow but absorbs AOE splash at only 40%. Immune to slow. Appears from Wave 10.",
+      kr: "압도적 체력의 기갑 거인. 매우 느리지만 광역 스플래시를 40%만 받음. 슬로우 면역. Wave 10부터 등장.",
+    },
+    pros: {
+      en: "Highest HP of all enemies · 60% AOE damage reduction · Immune to slow · High kill reward (28g)",
+      kr: "전 적 중 최고 체력 · AOE 데미지 60% 감소 · 슬로우 면역 · 높은 처치 보상(28골드)",
+    },
+    cons: {
+      en: "Slowest movement speed · Countered by Cryo Field affinity (×1.4 direct damage) · Vulnerable to single-target burst",
+      kr: "가장 느린 이동속도 · 크라이오 필드 상성 취약(×1.4 직접 데미지) · 단일 집중 공격에 취약",
+    },
+  },
 };

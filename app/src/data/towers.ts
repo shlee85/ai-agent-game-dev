@@ -57,8 +57,8 @@ export const TOWER_CONFIG: Record<string, TowerStats> = {
     attackType: "slow",
     slowMultiplier: 0.5,
     slowDuration: 2.0,
-    affinityEnemyType: "guard",
-    affinityMultiplier: 1.3,
+    affinityEnemyType: "golem",
+    affinityMultiplier: 1.4,
   },
   chain: {
     id: "chain",

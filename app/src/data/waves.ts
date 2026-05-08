@@ -290,8 +290,9 @@ export const WAVE_CONFIG: Record<WaveIdAll, WaveConfig> = {
       hard: 0.95,
     },
     enemies: [
-      { type: "guard", weight: 45 },
-      { type: "runner", weight: 55 },
+      { type: "guard", weight: 40 },
+      { type: "runner", weight: 50 },
+      { type: "golem", weight: 10 },
     ],
     totalSpawnCountByDifficulty: {
       easy: 220,
@@ -382,8 +383,9 @@ export const WAVE_CONFIG: Record<WaveIdAll, WaveConfig> = {
       hard: 0.8,
     },
     enemies: [
-      { type: "guard", weight: 35 },
-      { type: "runner", weight: 65 },
+      { type: "guard", weight: 30 },
+      { type: "runner", weight: 55 },
+      { type: "golem", weight: 15 },
     ],
     totalSpawnCountByDifficulty: {
       easy: 285,
@@ -438,8 +440,9 @@ export const WAVE_CONFIG: Record<WaveIdAll, WaveConfig> = {
       hard: 0.72,
     },
     enemies: [
-      { type: "guard", weight: 45 },
-      { type: "runner", weight: 55 },
+      { type: "guard", weight: 35 },
+      { type: "runner", weight: 45 },
+      { type: "golem", weight: 20 },
     ],
     totalSpawnCountByDifficulty: {
       easy: 340,
@@ -495,8 +498,9 @@ export const WAVE_CONFIG: Record<WaveIdAll, WaveConfig> = {
       hard: 0.95,
     },
     enemies: [
-      { type: "guard", weight: 50 },
-      { type: "phantom", weight: 50 },
+      { type: "guard", weight: 35 },
+      { type: "phantom", weight: 40 },
+      { type: "golem", weight: 25 },
     ],
     totalSpawnCountByDifficulty: {
       easy: 220,
@@ -586,9 +590,10 @@ export const WAVE_CONFIG: Record<WaveIdAll, WaveConfig> = {
       hard: 0.68,
     },
     enemies: [
-      { type: "guard", weight: 30 },
-      { type: "runner", weight: 35 },
-      { type: "phantom", weight: 35 },
+      { type: "guard", weight: 20 },
+      { type: "runner", weight: 25 },
+      { type: "phantom", weight: 30 },
+      { type: "golem", weight: 25 },
     ],
     totalSpawnCountByDifficulty: {
       easy: 380,

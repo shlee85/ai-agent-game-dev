@@ -4,6 +4,40 @@
 
 ---
 
+## [2026-05-08] 타워 3단계 업그레이드 + 시즈 골렘 신규 적 추가
+
+### 상세 변경 사항 요약
+
+1. **타워 업그레이드 3단계로 확장 (TowerMenu.tsx)**
+   - 기존: Lv1 → Lv2 (최대, 1회 업그레이드)
+   - 변경: Lv1 → Lv2 → Lv3 (최대, 2회 업그레이드)
+   - 1→2 업그레이드 비용: 기존 `upgradeCost` 동일
+   - 2→3 업그레이드 비용: `upgradeCost × 1.5`
+   - 스탯 배율: Lv1=1.0× / Lv2=1.5× / Lv3=2.0×
+   - UI: Lv2에는 "U" 배지, Lv3에는 "MAX" 금색 배지
+   - 판매가: 투자 총액(원가 + 업그레이드 비용 누적)의 70% 환급
+
+2. **신규 적: 시즈 골렘 (Siege Golem) (enemies.ts)**
+   - 고체력(350) / 극저속(0.45타일/초) / 슬로우 면역 / AOE 저항(스플래시 40%만 피격)
+   - 처치 보상 28골드 (전 적 최고)
+   - Wave 10 첫 등장 → 13·15·17·20에서 비중 증가
+   - 크라이오 필드(slow) 상성 변경: guard → golem (×1.4 직접 데미지)
+
+3. **AOE 저항 전투 로직 추가 (WaveScreen.tsx)**
+   - `EnemyStats.aoeResistance` 필드 신설 (1.0=풀피격, 0.4=40%만 피격)
+   - AOE 스플래시 데미지 계산 시 `aoeResistance` 반영
+
+4. **에셋 추가**
+   - `assets/units/enemies/enemy_golem.png` — 육각 기갑 SF 스프라이트 (Python Pillow 생성)
+   - `enemyAssets.ts` golem 매핑 추가
+   - `guideData.ts` golem 설명 추가 (EN/KR)
+   - `i18n/index.ts` golem 이름·상성 텍스트 추가 (EN/KR)
+
+5. **파일 정리**
+   - `Phase0Screen.tsx`, `Phase1Screen.tsx` 완전 삭제 (3D 패키지 제거 후 미사용 확정)
+
+---
+
 ## [2026-05-08] 3D 패키지 제거 및 로컬 APK 빌드 성공
 
 ### 상세 변경 사항 요약

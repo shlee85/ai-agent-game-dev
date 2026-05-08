@@ -450,7 +450,8 @@ export function WaveScreen({
                     towerStats.affinityEnemyType && towerStats.affinityEnemyType === aoeTarget.type
                       ? (towerStats.affinityMultiplier ?? 1)
                       : 1;
-                  aoeTarget.hp -= towerStats.baseDamage * levelMult * aoeAffinityMult;
+                  const aoeResist = ENEMY_CONFIG[aoeTarget.type as EnemyType]?.aoeResistance ?? 1.0;
+                  aoeTarget.hp -= towerStats.baseDamage * levelMult * aoeAffinityMult * aoeResist;
                   aoeTarget.hitTimer = 0.1;
                 }
               });
