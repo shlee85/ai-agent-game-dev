@@ -653,3 +653,17 @@ Python Pillow로 256×256 RGBA 8종 전부 재생성:
 
 Expo Go에서 실행하면 맵과 가이드 화면에 새 이미지가 보일 거야.
 나머지 타워도 GPT 이미지 준비되면 같은 방식으로 교체할 수 있어. 파일명은 어떤 걸 만들었는지 알려주면 돼.
+
+## 질문 : 응 좋아, 그런데 이걸 실제 게임에도 적용하고 싶은데 될까?
+
+[CLAUDE 답변]
+
+이미 코드에 적용된 상태야. `tower_sniper.png`가 교체됐으니 어디서 실행하든 새 이미지가 나와.
+
+- **Expo Go** (개발 확인): `npx expo start` → QR 스캔하면 바로 반영
+- **APK 재빌드** (폰에 설치):
+  ```bash
+  cd ~/work/PathDefenseGame/app
+  ./gradlew assembleRelease
+  ```
+  완료 후 `app/android/app/build/outputs/apk/release/app-release.apk`를 폰에 복사해서 설치하면 돼. 이전 APK 위에 덮어 설치 가능.
