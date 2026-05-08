@@ -640,3 +640,16 @@ Python Pillow로 256×256 RGBA 8종 전부 재생성:
 | **Lv3** | 시안 맥동 링 2개 + 두꺼운 시안 테두리 + 사각 `MAX` 배지 | 시안 테두리 + `MAX` 배지, `Lv.3` 시안 |
 
 커밋: `645a3d5`
+
+## 질문: 내가 GPT를 이용해서 이미지를 만들었어. asset/image_lance.png
+이게 Level1의 모양인데 이거 적용 가능하니? 방어탑에
+
+[CLAUDE 답변]
+
+가능해. `app/assets/image_lance.png` (1024×1024 RGBA)를 Pulse Lancer(스나이퍼 타워)에 바로 적용했어.
+
+- 복사 위치: `app/assets/units/towers/tower_sniper.png`
+- 커밋: `e0e0443`
+
+Expo Go에서 실행하면 맵과 가이드 화면에 새 이미지가 보일 거야.
+나머지 타워도 GPT 이미지 준비되면 같은 방식으로 교체할 수 있어. 파일명은 어떤 걸 만들었는지 알려주면 돼.
