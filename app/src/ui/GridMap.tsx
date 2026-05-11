@@ -76,28 +76,18 @@ function getEnemyPulseScale(enemyType: string, nowMs: number) {
 
 function renderTowerVisual(towerType: string, nowMs: number, tileSize: number) {
   if (towerType === "sniper") {
-    const glow = 0.3 + (Math.sin(nowMs / 260) + 1) * 0.12;
+    const glow = 0.15 + (Math.sin(nowMs / 260) + 1) * 0.08;
     return (
       <View pointerEvents="none" style={{ position: "absolute", width: "100%", height: "100%", alignItems: "center", justifyContent: "center" }}>
         <View
           style={{
             position: "absolute",
-            width: tileSize * 0.5,
-            height: tileSize * 0.5,
+            width: tileSize * 0.9,
+            height: tileSize * 0.9,
             borderRadius: 999,
-            borderWidth: 2,
+            borderWidth: 1.5,
             borderColor: "#67e8f9",
             opacity: glow,
-          }}
-        />
-        <View
-          style={{
-            position: "absolute",
-            width: tileSize * 0.2,
-            height: tileSize * 0.46,
-            borderRadius: 999,
-            backgroundColor: "rgba(103, 232, 249, 0.82)",
-            transform: [{ rotate: "32deg" }, { translateY: -tileSize * 0.03 }],
           }}
         />
       </View>
@@ -226,20 +216,7 @@ function getTowerPulseOpacity(towerType: string, nowMs: number) {
 
 function getTowerAccent(towerType: string, tileSize: number, color: string) {
   if (towerType === "sniper") {
-    return (
-      <View
-        pointerEvents="none"
-        style={{
-          position: "absolute",
-          top: tileSize * 0.08,
-          width: tileSize * 0.16,
-          height: tileSize * 0.5,
-          borderRadius: 999,
-          backgroundColor: color,
-          opacity: 0.55,
-        }}
-      />
-    );
+    return null;
   }
   if (towerType === "aoe") {
     return (

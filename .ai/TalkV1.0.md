@@ -681,3 +681,20 @@ npx expo start --clear
 ```
 그 후 Expo Go에서 다시 QR 스캔하면 게임 맵에도 새 이미지 적용됨.
 APK라면 `./gradlew assembleRelease` 재빌드로 해결.
+
+## 질문: 방금 해봤는데 이전하고 똑같아. 이전의 lance와 같은 이미지 이던데.... 왜그럴까?
+
+[CLAUDE 답변]
+GridMap.tsx의 `renderTowerVisual`(sniper)이 이미지 위에 불투명도 0.82의 시안색 막대를 그리고,
+`getTowerAccent`(sniper)가 0.55의 컬러 막대를 추가로 덮어서 새 이미지가 보이지 않았음.
+Guide 화면에는 이런 오버레이가 없어 이미지가 그대로 보였던 것.
+→ renderTowerVisual에서 sniper의 solid 막대를 제거하고 외곽 원형 glow만 opacity 낮게 유지,
+  getTowerAccent의 sniper는 null 반환으로 변경.
+
+## 질문: apk빌드는 내가 하라고 할때만 하도록해.
+난 지금 Expo GO에서 실시간으로 확인중인겨 거기서 이미지가 안보인다구 가이드에는 보이는데
+
+[CLAUDE 답변]
+알겠음. APK 빌드는 명시적으로 요청할 때만 진행.
+이미지가 Expo Go에서 보이지 않는 원인 → 위 답변 참조 (오버레이가 이미지를 가리는 문제).
+GridMap.tsx에서 sniper 오버레이 제거 후 Expo Go를 reload하면 새 GPT 이미지가 보임.
