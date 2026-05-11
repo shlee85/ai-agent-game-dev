@@ -755,3 +755,21 @@ GridMap.tsx에서 sniper 오버레이 제거 후 Expo Go를 reload하면 새 GPT
 - Volt Striker(chain): 노란색 작은 원형 → 빠르게 직진
 
 → `projectiles` state 별도 추가하여 구현. attackEffects의 정적 임팩트와 병행.
+## 질문: 좋아, 일단 내가 원하는건 맞아. 그럼 내가 나머지 캐릭터들에 대한 이미지 제공해주면 다 이렇게 해줘야해.
+조금 이따가 해줄게~~ 버그좀 잡고 있어.
+
+[CLAUDE 답변]
+알겠음. 이미지 제공해주면 바로 적용.
+
+타워 이미지는 `app/assets/units/towers/` 에 있는 파일명에 맞게 교체하면 됨:
+- `tower_sniper.png` (Pulse Lancer) — 이미 적용됨
+- `tower_aoe.png` (Nova Cannon)
+- `tower_slow.png` (Cryo Field)
+- `tower_chain.png` (Volt Striker)
+
+이미지 제공 시 같이 할 것:
+1. 해당 `tower_*.png` 파일 교체
+2. 이미지 기본 방향(위쪽/오른쪽 등) 확인 → 회전 offset 보정
+3. 해당 타워의 오버레이(`renderTowerVisual`, `getTowerAccent`) 제거 또는 축소
+
+버그 다 잡고 준비되면 말해줘.
