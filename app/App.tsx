@@ -27,11 +27,13 @@ export default function App() {
   const [itemInventory, setItemInventory] = useState<Record<string, number>>(DEFAULT_ITEM_INVENTORY);
   const [adminEnabled, setAdminEnabled] = useState<boolean>(false);
   const adminPrevDiamondRef = useRef<number | null>(null);
+  const adminPrevItemInventoryRef = useRef<Record<string, number> | null>(null);
   const lastShopBuyAtRef = useRef<number>(0);
 
   const toggleAdminMode = () => {
     if (!adminEnabled) {
       adminPrevDiamondRef.current = diamond;
+      adminPrevItemInventoryRef.current = { ...itemInventory };
       setAdminEnabled(true);
       setDiamond(1000);
       return;
@@ -41,6 +43,10 @@ export default function App() {
     if (adminPrevDiamondRef.current != null) {
       setDiamond(adminPrevDiamondRef.current);
       adminPrevDiamondRef.current = null;
+    }
+    if (adminPrevItemInventoryRef.current != null) {
+      setItemInventory(adminPrevItemInventoryRef.current);
+      adminPrevItemInventoryRef.current = null;
     }
   };
 

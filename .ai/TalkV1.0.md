@@ -773,3 +773,10 @@ GridMap.tsx에서 sniper 오버레이 제거 후 Expo Go를 reload하면 새 GPT
 3. 해당 타워의 오버레이(`renderTowerVisual`, `getTowerAccent`) 제거 또는 축소
 
 버그 다 잡고 준비되면 말해줘.
+
+## 질문 : 버그는 니가 잡으라고. 보니깐 운영자모드를 켯다 끄면 골드나 이런건 초기화 안되던데 이런것도 일반 사용자 모드로 돌아가야해.
+
+[CLAUDE 답변]
+Admin OFF 시 Admin이 지급한 골드·아이템을 원복하도록 수정.
+Admin ON 시점의 값을 ref에 저장해 두었다가 OFF 시 그 값으로 복원.
+→ 수정 진행.
