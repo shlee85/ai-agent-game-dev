@@ -12,6 +12,18 @@ interface TowerData {
   level: number;
 }
 
+export interface ProjectileData {
+  id: string;
+  startRow: number;
+  startCol: number;
+  endRow: number;
+  endCol: number;
+  spawnTime: number;
+  duration: number;
+  color: string;
+  towerType: string;
+}
+
 export interface AttackEffect {
   id: string;
   row: number;
@@ -59,6 +71,7 @@ interface GridMapProps {
   rangeDisplay?: { row: number; col: number; radius: number } | null;
   flashColor?: string | null;
   towerAngles?: Record<string, number>;
+  projectiles?: ProjectileData[];
   onSelectCell: (row: number, col: number) => void;
 }
 
@@ -299,7 +312,7 @@ function FloatingTextItem({ data, tileSize }: { data: FloatingTextData; tileSize
   );
 }
 
-export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffects = [], floatingTexts = [], rangeDisplay = null, flashColor = null, towerAngles = {}, onSelectCell }: GridMapProps) {
+export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffects = [], floatingTexts = [], rangeDisplay = null, flashColor = null, towerAngles = {}, projectiles = [], onSelectCell }: GridMapProps) {
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   const handleLayout = (e: LayoutChangeEvent) => {
@@ -777,6 +790,38 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
           })}
 
           {/* 공격 이펙트 렌더링 */}
+          {/* 발사체 렌더링 */}
+          {projectiles.map((proj) => {
+            const now = Date.now();
+            const progress = Math.min(1, (now - proj.spawnTime) / proj.duration);
+            const curRow = proj.startRow + (proj.endRow - proj.startRow) * progress;
+            const curCol = proj.startCol + (proj.endCol - proj.startCol) * progress;
+            const isAoe = proj.towerType === "aoe";
+            const dotSize = isAoe ? tileSize * 0.22 : tileSize * 0.14;
+            const opacity = 1 - progress * 0.3;
+            return (
+              <View
+                key={proj.id}
+                pointerEvents="none"
+                style={{
+                  position: "absolute",
+                  top: curRow * tileSize + tileSize / 2 - dotSize / 2,
+                  left: curCol * tileSize + tileSize / 2 - dotSize / 2,
+                  width: dotSize,
+                  height: dotSize,
+                  borderRadius: 999,
+                  backgroundColor: proj.color,
+                  opacity,
+                  zIndex: 25,
+                  shadowColor: proj.color,
+                  shadowOpacity: 0.9,
+                  shadowRadius: 4,
+                  elevation: 4,
+                }}
+              />
+            );
+          })}
+
           {attackEffects.map((effect) => {
             const commonStyle = {
               position: "absolute" as const,

@@ -10,7 +10,7 @@ import { WAVE_CONFIG, WaveId } from "../data/waves";
 import { TOWER_CONFIG } from "../data/towers";
 import { ENEMY_CONFIG, EnemyType } from "../data/enemies";
 import { ITEM_CONFIG, ItemStats } from "../data/items";
-import { GridMap, EnemyData, AttackEffect, FloatingTextData } from "../ui/GridMap";
+import { GridMap, EnemyData, AttackEffect, FloatingTextData, ProjectileData } from "../ui/GridMap";
 import { HUD } from "../ui/HUD";
 import { BuildMenu, TOWER_OPTIONS } from "../ui/BuildMenu";
 import { TowerMenu } from "../ui/TowerMenu";
@@ -68,6 +68,7 @@ export function WaveScreen({
   const [towers, setTowers] = useState<Record<string, any>>({});
   const [enemies, setEnemies] = useState<EnemyData[]>([]);
   const [attackEffects, setAttackEffects] = useState<AttackEffect[]>([]);
+  const [projectiles, setProjectiles] = useState<ProjectileData[]>([]);
   const [floatingTexts, setFloatingTexts] = useState<FloatingTextData[]>([]);
   const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
   const [activeItem, setActiveItem] = useState<ItemStats | null>(null);
@@ -398,6 +399,22 @@ export function WaveScreen({
 
             // 타워 조준 각도 업데이트 (이미지 기본 방향: 위쪽 → +90° 보정)
             towerAnglesRef.current[towerKey] = Math.atan2(eRow - towerRow, eCol - towerCol) * (180 / Math.PI) + 90;
+
+            // 발사체 생성
+            const projDuration = towerStats.attackType === "aoe" ? 240 : towerStats.attackType === "slow" ? 280 : 160;
+            const projId = `proj-${Date.now()}-${Math.random()}`;
+            setProjectiles((prev) => [...prev, {
+              id: projId,
+              startRow: towerRow,
+              startCol: towerCol,
+              endRow: eRow,
+              endCol: eCol,
+              spawnTime: Date.now(),
+              duration: projDuration,
+              color: towerStats.color,
+              towerType: towerData.type,
+            }]);
+            setTimeout(() => setProjectiles((prev) => prev.filter((p) => p.id !== projId)), projDuration + 50);
 
             // 이펙트 추가: 타워 발사 리코일 + 타겟 임팩트
             soundManager.playSfx(soundManager.getTowerSfxKey(towerStats.id), 0.55, 80);
@@ -810,6 +827,7 @@ export function WaveScreen({
           rangeDisplay={rangeDisplay}
           flashColor={flashColor}
           towerAngles={towerAngles}
+          projectiles={projectiles}
         />
       </Pressable>
 

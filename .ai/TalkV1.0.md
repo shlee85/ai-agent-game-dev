@@ -736,3 +736,22 @@ GridMap.tsx에서 sniper 오버레이 제거 후 Expo Go를 reload하면 새 GPT
 - 현재 lance 이미지가 어느 방향을 향하는지 확인 후 offset 설정
 
 → 구현 진행.
+
+## 질문: 그래? 그럼 일단 구현해봐. 그리고 이팩트라고 해야하나? 그거랑 무기가 발사되면 예를들어 총이면 총알이 나가는것도 보여줘야 하잖아?
+이건 이미지가 필요한거니?
+
+[CLAUDE 답변]
+이미지 필요 없음. React Native View 컴포넌트만으로 구현 가능.
+
+**발사체(Projectile) 방식:**
+- 타워 공격 시점에 시작좌표·끝좌표·시간 정보를 담은 projectile 데이터 생성
+- GridMap 렌더링 시 경과 시간에 따라 위치 보간(interpolate) → 움직이는 점/선 효과
+- 별도 이미지 파일 없이 View의 색상·크기·borderRadius로 표현
+
+**타워별 발사체 디자인 (이미지 불필요):**
+- Pulse Lancer(sniper): 작은 시안색 원형 → 빠르게 직진
+- Nova Cannon(aoe): 주황색 큰 원형 → 느리게 직진 후 폭발 링
+- Cryo Field(slow): 파란색 원형 → 중간 속도
+- Volt Striker(chain): 노란색 작은 원형 → 빠르게 직진
+
+→ `projectiles` state 별도 추가하여 구현. attackEffects의 정적 임팩트와 병행.
