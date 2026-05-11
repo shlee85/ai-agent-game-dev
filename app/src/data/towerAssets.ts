@@ -16,8 +16,8 @@ export const TOWER_ASSETS_BY_LEVEL: Record<string, Record<number, ImageSourcePro
   },
   aoe: {
     1: require("../../assets/nova_canon1.png"),
-    2: require("../../assets/nova_canon1.png"),
-    3: require("../../assets/nova_canon1.png"),
+    2: require("../../assets/nova_canon2.png"),
+    3: require("../../assets/nova_canon3.png"),
   },
 };
 

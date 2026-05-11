@@ -819,3 +819,8 @@ towerAssets에 레벨별 이미지 맵 추가 후 GridMap에서 타워 레벨에
 `TOWER_ASSETS_BY_LEVEL`에 aoe 항목 추가 → GridMap에서 Lv1일 때 nova_canon1.png 사용.
 Lv2/3는 이미지 없으므로 Lv1과 동일 이미지 유지.
 → 수정 완료.
+
+## 질문: 지금 노바캐논에 대해서 level2와 3버전을 추가 했어. 바로 추가 해줘~~
+
+[CLAUDE 답변]
+`nova_canon2.png`, `nova_canon3.png` 확인. `TOWER_ASSETS_BY_LEVEL`의 aoe Lv2/3 경로 교체 완료.
