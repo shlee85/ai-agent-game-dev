@@ -3,7 +3,7 @@ import { View, LayoutChangeEvent, Pressable, Text, Animated, Image } from "react
 
 import { StageConfig } from "../data/stages";
 import { ENEMY_ASSETS } from "../data/enemyAssets";
-import { TOWER_ASSETS } from "../data/towerAssets";
+import { getTowerImage } from "../data/towerAssets";
 import { getEnemyThreatTag, getTowerRoleTag } from "../data/visualTheme";
 
 interface TowerData {
@@ -509,7 +509,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                           }}
                         />
                         <Image
-                          source={TOWER_ASSETS[tower.type]}
+                          source={getTowerImage(tower.type, tower.level)}
                           style={{
                             width: "100%",
                             height: "100%",

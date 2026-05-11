@@ -780,3 +780,14 @@ GridMap.tsx에서 sniper 오버레이 제거 후 Expo Go를 reload하면 새 GPT
 Admin OFF 시 Admin이 지급한 골드·아이템을 원복하도록 수정.
 Admin ON 시점의 값을 ref에 저장해 두었다가 OFF 시 그 값으로 복원.
 → 수정 진행.
+
+## 질문: 지금 lance level2, level3형으로 다 넣었어 asset에
+image_lance2는 level2
+image_lance3는 level3
+추가해줘.
+이걸 기준으로 테스트 해보자
+
+[CLAUDE 답변]
+`image_lance.png` / `image_lance2.png` / `image_lance3.png` 확인.
+towerAssets에 레벨별 이미지 맵 추가 후 GridMap에서 타워 레벨에 따라 다른 이미지 사용하도록 수정.
+→ 수정 진행.
