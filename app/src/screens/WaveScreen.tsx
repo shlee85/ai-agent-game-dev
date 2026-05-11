@@ -98,6 +98,8 @@ export function WaveScreen({
   const spawnCountRef = useRef(0);
   const towersRef = useRef(towers);
   const towerCooldownsRef = useRef<Record<string, number>>({});
+  const towerAnglesRef = useRef<Record<string, number>>({});
+  const [towerAngles, setTowerAngles] = useState<Record<string, number>>({});
   const gameStateRef = useRef(gameState);
   const heartRef = useRef(heart);
   const timeLeftRef = useRef<number>(wave.durationSec);
@@ -394,6 +396,9 @@ export function WaveScreen({
             const towerRow = Number(towerRowStr);
             const towerCol = Number(towerColStr);
 
+            // 타워 조준 각도 업데이트 (이미지 기본 방향: 위쪽 → +90° 보정)
+            towerAnglesRef.current[towerKey] = Math.atan2(eRow - towerRow, eCol - towerCol) * (180 / Math.PI) + 90;
+
             // 이펙트 추가: 타워 발사 리코일 + 타겟 임팩트
             soundManager.playSfx(soundManager.getTowerSfxKey(towerStats.id), 0.55, 80);
             effectsToDraw.push({
@@ -459,7 +464,10 @@ export function WaveScreen({
           }
         });
 
-        // 2-3. 이펙트를 State로 보내기 (잠깐 띄웠다가 삭제)
+        // 2-3. 타워 조준 각도 state 반영
+        setTowerAngles({ ...towerAnglesRef.current });
+
+        // 2-4. 이펙트를 State로 보내기 (잠깐 띄웠다가 삭제)
         if (effectsToDraw.length > 0) {
           setAttackEffects((prev) => [...prev, ...effectsToDraw]);
           setTimeout(() => {
@@ -801,6 +809,7 @@ export function WaveScreen({
           onSelectCell={handleSelectCell}
           rangeDisplay={rangeDisplay}
           flashColor={flashColor}
+          towerAngles={towerAngles}
         />
       </Pressable>
 

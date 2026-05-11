@@ -58,6 +58,7 @@ interface GridMapProps {
   floatingTexts?: FloatingTextData[];
   rangeDisplay?: { row: number; col: number; radius: number } | null;
   flashColor?: string | null;
+  towerAngles?: Record<string, number>;
   onSelectCell: (row: number, col: number) => void;
 }
 
@@ -298,7 +299,7 @@ function FloatingTextItem({ data, tileSize }: { data: FloatingTextData; tileSize
   );
 }
 
-export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffects = [], floatingTexts = [], rangeDisplay = null, flashColor = null, onSelectCell }: GridMapProps) {
+export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffects = [], floatingTexts = [], rangeDisplay = null, flashColor = null, towerAngles = {}, onSelectCell }: GridMapProps) {
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
   const handleLayout = (e: LayoutChangeEvent) => {
@@ -499,6 +500,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                           style={{
                             width: "100%",
                             height: "100%",
+                            transform: [{ rotate: `${towerAngles[key] ?? 0}deg` }],
                           }}
                           resizeMode="contain"
                         />
