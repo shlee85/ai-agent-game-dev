@@ -791,3 +791,22 @@ image_lance3는 level3
 `image_lance.png` / `image_lance2.png` / `image_lance3.png` 확인.
 towerAssets에 레벨별 이미지 맵 추가 후 GridMap에서 타워 레벨에 따라 다른 이미지 사용하도록 수정.
 → 수정 진행.
+
+## 질문: 현재 각 캐릭터(타워)들의 한글 이름등도 전부 character.md에 업데이트좀 해줘 내가 햇갈린다
+
+[CLAUDE 답변]
+`Character.md` 전면 재작성 완료. 실제 `towers.ts` / `enemies.ts` 코드 기준으로 동기화.
+
+**타워 4종:**
+- 펄스 랜서 (Pulse Lancer) / `sniper` — 단일 저격, Guard Shell 상성
+- 노바 캐논 (Nova Cannon) / `aoe` — AOE 폭격, Runner Drone 상성
+- 크라이오 필드 (Cryo Field) / `slow` — 감속 제어, Siege Golem 상성 ×1.4
+- 볼트 스트라이커 (Volt Striker) / `chain` — 전격 AOE, Phantom Crawler 상성
+
+**적 4종:**
+- 가드 쉘 (Guard Shell) / `guard` — HP 120, 속도 1.0
+- 러너 드론 (Runner Drone) / `runner` — HP 45, 속도 2.2 (누수 위험)
+- 팬텀 크롤러 (Phantom Crawler) / `phantom` — HP 75, 슬로우 면역
+- 시즈 골렘 (Siege Golem) / `golem` — HP 350, 슬로우 면역, AOE 저항 60%
+
+레벨별 스탯·이미지 파일·상성표 포함.

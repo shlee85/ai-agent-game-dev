@@ -1,145 +1,128 @@
-# Character Design
+# Character Sheet — Sentinel Protocol v1.0
 
-## 1) 문서 목적
-- 본 문서는 캐릭터(방어 타워/적 유닛) 관련 기획만 관리한다.
-- 게임 룰, 완료 기준, 단계별 일정은 `GamePlan.md`에서 관리한다.
+> 실제 코드(`towers.ts` / `enemies.ts`) 기준으로 동기화된 캐릭터 시트.
+> 헷갈릴 때 이 문서를 참고할 것.
 
-## 2) 분류 기준
-- 방어 캐릭터(타워): 플레이어가 설치/운용하는 유닛
-- 적 캐릭터(적 유닛): 경로를 따라 이동하며 거점을 공격하는 유닛
-- 역할(Role): 단일딜, 광역딜, 돌격형, 탱커형 등 전투 포지션 분류
+---
 
-## 3) 방어 캐릭터(초기 3종)
+## 타워 (4종)
 
-### 3.1 Aegis Lance (단일 저격형)
-- 종류: 방어 타워
-- 역할: 단일 고화력 딜러
-- 성격: 느리지만 정확하게 강한 일격을 주는 정밀형
-- 에너지 표기: EN(에너지) 100 기준, 1회 공격당 10 소모
-- 특징:
-  - 고체력 적 대응에 특화
-  - 공격 속도는 낮지만 치명타 확률 보유
-  - 업그레이드 시 사거리 증가 폭이 큼
+| 항목 | 펄스 랜서 | 노바 캐논 | 크라이오 필드 | 볼트 스트라이커 |
+|---|---|---|---|---|
+| **한글 이름** | 펄스 랜서 | 노바 캐논 | 크라이오 필드 | 볼트 스트라이커 |
+| **영문 이름** | Pulse Lancer | Nova Cannon | Cryo Field | Volt Striker |
+| **시스템 ID** | `sniper` | `aoe` | `slow` | `chain` |
+| **역할** | 단일 저격형 | 광역 폭격형 | 감속 제어형 | 광역 전격형 |
+| **설치 비용** | 120G | 160G | 140G | 150G |
+| **업그레이드 비용** | Lv1→2: 180G / Lv2→3: 270G | Lv1→2: 240G / Lv2→3: 360G | Lv1→2: 210G / Lv2→3: 315G | Lv1→2: 225G / Lv2→3: 338G |
+| **기본 ATK** | 45 | 15 | 5 | 8 |
+| **ATK (Lv2)** | 67 | 22 | 7 | 12 |
+| **ATK (Lv3)** | 90 | 30 | 10 | 16 |
+| **사거리(RNG)** | 3.5타일 | 2.5타일 | 2.5타일 | 3.0타일 |
+| **쿨다운(CD)** | 1.2s | 1.5s | 1.0s | 0.7s |
+| **공격 방식** | SINGLE | AOE (반경 1.5) | SLOW (50%감속 2초) | AOE (반경 1.0) |
+| **상성 적** | Guard Shell ×1.3 | Runner Drone ×1.3 | Siege Golem ×1.4 | Phantom Crawler ×1.3 |
+| **이미지 Lv1** | `image_lance.png` | `tower_aoe.png` | `tower_slow.png` | `tower_chain.png` |
+| **이미지 Lv2** | `image_lance2.png` | (Lv1과 동일) | (Lv1과 동일) | (Lv1과 동일) |
+| **이미지 Lv3** | `image_lance3.png` | (Lv1과 동일) | (Lv1과 동일) | (Lv1과 동일) |
+| **에셋 파일** | `tower_sniper.png` | `tower_aoe.png` | `tower_slow.png` | `tower_chain.png` |
+| **색상** | 시안 (#67e8f9) | 주황 (#F97316) | 하늘 (#06B6D4) | 보라 (#A855F7) |
 
-### 3.2 Ember Nova (광역 폭격형)
-- 종류: 방어 타워
-- 역할: 광역 피해 딜러
-- 성격: 다수 제압 중심의 화력형
-- 에너지 표기: EN 100 기준, 1회 공격당 16 소모
-- 특징:
-  - 범위 피해로 다수 적 정리
-  - 단일 타깃 화력은 낮음
-  - 웨이브 중반 이후 효율이 크게 증가
+### 타워 특징 요약
 
-### 3.3 Frost Ward (감속 제어형)
-- 종류: 방어 타워
-- 역할: 군중 제어(CC) / 감속 지원
-- 성격: 직접 처치보다 전장 제어에 특화
-- 에너지 표기: EN 100 기준, 1회 공격당 8 소모
-- 특징:
-  - 적 이동속도 감소 디버프 부여
-  - 다른 공격 타워의 유효 시간 확보
-  - 상위 웨이브에서 핵심 유틸리티 역할
+**펄스 랜서 (Pulse Lancer)**
+- 단일 적을 높은 데미지로 순간 제거
+- Guard Shell 전담, 고레벨 업그레이드 효율 최고
+- 이미지가 적을 향해 자동 회전 (레벨별 이미지 별도 존재)
 
-## 4) 적 캐릭터(초기 2종)
+**노바 캐논 (Nova Cannon)**
+- 범위 내 모든 적에게 피해 (AOE 반경 1.5타일)
+- Runner Drone 밀집 처리에 탁월
+- 단일 화력은 낮으나 다수 동시 처리
 
-### 4.1 Runner Drone (돌격형)
-- 종류: 적 유닛
-- 역할: 고속 침투
-- 성격: 체력은 낮고 매우 빠름
-- 에너지 표기: ST(스태미나) 100 기준, 이동 특화
-- 특징:
-  - 누수(Leak) 유발 위험이 높음
-  - 감속 제어형 대응 시 약해짐
+**크라이오 필드 (Cryo Field)**
+- 공격과 동시에 적 이동속도 50% 감소 (2초)
+- Siege Golem 상성 ×1.4 (유일하게 골렘에 효과적)
+- 직접 처치보다 다른 타워와 연계 시 진가 발휘
 
-### 4.2 Guard Shell (기본/준탱커형)
-- 종류: 적 유닛
-- 역할: 전선 유지
-- 성격: 속도는 느리지만 생존력이 높음
-- 에너지 표기: ST 100 기준, 방어 특화
-- 특징:
-  - 단일 저격형/지속 화력 타워 대응 필요
-  - 웨이브 후반에 물량과 함께 등장 시 위협 증가
+**볼트 스트라이커 (Volt Striker)**
+- 빠른 쿨다운(0.7s)으로 연속 공격
+- AOE 1.0타일로 밀집 소형적 처리
+- Phantom Crawler 상성 ×1.3
 
-## 5) 네이밍 원칙
-- 이름은 "고유명 + 역할" 구분이 가능해야 한다.
-- 문서/코드에서는 다음 표기를 우선한다:
-  - 표시명(Display Name): 사용자 UI 표기용
-  - 시스템명(System ID): 내부 데이터/코드 식별용
+---
 
-### 5.1 Beta 3.0 통합 네이밍 매핑 (고정)
-- 아래 3개는 항상 1:1로 같이 관리한다.
-  - `Display Name` (UI)
-  - `System ID` (코드)
-  - `Asset File` (PNG)
+## 적 유닛 (4종)
 
-| Role | Display Name | System ID | Asset File |
-|---|---|---|---|
-| Tower | Sniper (Aegis Lance) | `sniper` | `tower_sniper.png` |
-| Tower | AOE (Ember Nova) | `aoe` | `tower_aoe.png` |
-| Tower | Slow (Frost Ward) | `slow` | `tower_slow.png` |
-| Enemy | Runner (Runner Drone) | `runner` | `enemy_runner.png` |
-| Enemy | Guard (Guard Shell) | `guard` | `enemy_guard.png` |
+| 항목 | 가드 쉘 | 러너 드론 | 팬텀 크롤러 | 시즈 골렘 |
+|---|---|---|---|---|
+| **한글 이름** | 가드 쉘 | 러너 드론 | 팬텀 크롤러 | 시즈 골렘 |
+| **영문 이름** | Guard Shell | Runner Drone | Phantom Crawler | Siege Golem |
+| **시스템 ID** | `guard` | `runner` | `phantom` | `golem` |
+| **역할** | 준탱커형 | 고속 침투형 | 슬로우 면역 돌격형 | 초고체력 보스형 |
+| **기본 HP** | 120 | 45 | 75 | 350 |
+| **이동속도** | 1.0 타일/s | 2.2 타일/s | 1.7 타일/s | 0.45 타일/s |
+| **처치 보상** | 10G | 12G | 14G | 28G |
+| **색상** | 빨강 (#EF4444) | 로즈 (#F43F5E) | 보라 (#8B5CF6) | 회갈 (#78716C) |
+| **크기** | 0.6 (타일 대비) | 0.45 | 0.50 | 0.82 |
+| **슬로우 면역** | ✗ | ✗ | ✓ | ✓ |
+| **AOE 저항** | 없음 | 없음 | 없음 | 60% (40%만 받음) |
+| **약점 타워** | Pulse Lancer | Nova Cannon | Volt Striker | Cryo Field |
+| **에셋 파일** | `enemy_guard.png` | `enemy_runner.png` | `enemy_phantom.png` | `enemy_golem.png` |
+| **등장 웨이브** | Wave 1~20 | Wave 1~20 | Wave 5~20 | Wave 10~20 |
 
-## 6) 밸런스 운영 원칙
-- 1차 목표: 캐릭터 간 "역할 차별화"가 명확해야 한다.
-- 2차 목표: 특정 캐릭터 1종으로 모든 웨이브 대응이 불가능해야 한다.
-- 3차 목표: 난이도 상승 시 조합의 중요도가 커지도록 설계한다.
+### 적 특징 요약
 
-## 7) Beta 2.0 캐릭터 UI 적용 규격 (1차)
-- 적용 순서:
-  1) 아군 타워 3종 (Aegis Lance, Ember Nova, Frost Ward)
-  2) 적 유닛 2종 (Runner Drone, Guard Shell)
-- 1차 적용 범위: 정지 일러스트 기반 스프라이트(프레임 애니메이션 제외)
-- 파일 규격:
-  - 포맷: PNG(투명 배경)
-  - 권장 원본: 256x256
-  - 렌더 점유율: 타일 대비 70~78%
-- 네이밍 규칙:
-  - 타워: `tower_<system-id>.png` (예: `tower_sniper.png`)
-  - 적 유닛: `enemy_<system-id>.png` (예: `enemy_runner.png`)
-- 적용 현황:
-  - 타워 3종 스프라이트 적용 완료
-  - 적 유닛 2종 스프라이트 적용 완료 (Runner Drone, Guard Shell)
-  - Runner: 이동 잔상 + 미세 펄스 적용
-  - Guard: 둔중한 미세 바운스 적용
-  - 공통: 스폰 플래시/피격/감속 오버레이 적용
+**가드 쉘 (Guard Shell)**
+- 체력이 높아 단일 타워로는 처리가 느림
+- 물량으로 밀어붙이는 초반 주력
+- Pulse Lancer로 우선 제거 권장
 
-## 8) Beta 2.0 동결 기준
-- 본 문서의 캐릭터 역할/표현은 Beta 2.0 1차 마감 기준으로 동결한다.
-- 추가 밸런스 수정(수치/크기/이펙트 강도)은 최종 플레이 테스트 이후 별도 항목으로 관리한다.
-- 3D 전환은 Beta 3.0 마일스톤에서 분리 진행한다.
+**러너 드론 (Runner Drone)**
+- 매우 빠른 이동속도(2.2) → 누수(Leak) 위험 최고
+- 체력이 낮아 AOE 한 방에 다수 처리 가능
+- Nova Cannon 설치 전까지 가장 위협적인 적
 
-## 9) Beta 3.0 캐릭터 일관성 가이드 (1차 확정)
+**팬텀 크롤러 (Phantom Crawler)**
+- 슬로우 면역 — Cryo Field 효과 무효
+- 준수한 체력 + 빠른 속도로 혼란 유발
+- Volt Striker 필수 (×1.3 상성)
 
-### 9.1 목표
-- 실행 직후 유저가 "디펜스 게임"으로 인지하도록 캐릭터/맵의 시각 문법을 통일한다.
-- 단일 에셋 퀄리티보다 **진영/역할/가독성 일관성**을 우선한다.
+**시즈 골렘 (Siege Golem)**
+- 초고체력(350) + 슬로우 면역 + AOE 60% 저항
+- 느리지만 일반 딜러로는 처치가 매우 어려움
+- Cryo Field 집중 배치 필수 (유일 상성 ×1.4)
+- Wave 10부터 등장, Wave 15 이후 비중 증가
 
-### 9.2 진영 시각 문법
-- 아군(타워):
-  - 계열: Cyan/Blue 기반 네온 + 메탈릭 포인트
-  - 규칙: 타워 하단 접지 그림자 + 역할 배지(SN/AOE/CC) 표시
-  - 금지: 과한 난색 중심(적 진영과 혼동 유발)
-- 적군(Enemy):
-  - 계열: Crimson/Rose 경고색 + 다크 베이스
-  - 규칙: 적 외곽 경보 링 유지, 피격/감속 오버레이 명확히 구분
-  - 금지: 아군과 동일한 청록 계열 주조색
+---
 
-### 9.3 실루엣/비율 규칙
-- Runner Drone:
-  - 작은 체급(타일 대비 약 45%), 고속 인상(잔상/펄스) 유지
-- Guard Shell:
-  - 중형 체급(타일 대비 약 60%), 둔중 인상(바운스/두꺼운 외곽) 유지
-- 타워:
-  - 타일 점유율 70~78% 유지, 업그레이드 배지는 우하단 고정
+## 상성 요약표
 
-### 9.4 맵과 결합 규칙
-- 경로(Path), 시작(IN), 목표(CORE), 설치 타일은 색/라벨로 즉시 식별 가능해야 한다.
-- 맵 장식은 HUD/전투 정보(HP/피격/스킬 범위)를 가리면 안 된다.
+| 타워 \ 적 | Guard Shell | Runner Drone | Phantom Crawler | Siege Golem |
+|---|---|---|---|---|
+| **Pulse Lancer** | ★ ×1.3 | - | - | - |
+| **Nova Cannon** | - | ★ ×1.3 | - | - |
+| **Cryo Field** | - | - | (슬로우 무효) | ★ ×1.4 |
+| **Volt Striker** | - | - | ★ ×1.3 | (AOE 저항 60%) |
 
-### 9.5 Beta 3.0 1차 적용 체크
-- [x] 타워 접지감(그림자) 반영
-- [x] 타워 역할 배지(SN/AOE/CC) 반영
-- [x] 적 외곽 경보 링 반영
-- [x] 맵 경로/시작/목표 식별 라벨 반영
+---
+
+## 파일 위치
+
+```
+app/assets/
+├── units/
+│   ├── towers/
+│   │   ├── tower_sniper.png   ← Pulse Lancer (= image_lance.png 복사본)
+│   │   ├── tower_aoe.png      ← Nova Cannon
+│   │   ├── tower_slow.png     ← Cryo Field
+│   │   └── tower_chain.png    ← Volt Striker
+│   └── enemies/
+│       ├── enemy_guard.png
+│       ├── enemy_runner.png
+│       ├── enemy_phantom.png
+│       └── enemy_golem.png
+├── image_lance.png   ← Pulse Lancer Lv1 (GPT 생성)
+├── image_lance2.png  ← Pulse Lancer Lv2 (GPT 생성)
+└── image_lance3.png  ← Pulse Lancer Lv3 (GPT 생성)
+```
