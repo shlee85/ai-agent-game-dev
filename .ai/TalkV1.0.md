@@ -810,3 +810,12 @@ towerAssets에 레벨별 이미지 맵 추가 후 GridMap에서 타워 레벨에
 - 시즈 골렘 (Siege Golem) / `golem` — HP 350, 슬로우 면역, AOE 저항 60%
 
 레벨별 스탯·이미지 파일·상성표 포함.
+
+## 질문: 지금 노바캐논도 이미지 한개 추가했어.
+얘는 level1인녀석이야.
+
+[CLAUDE 답변]
+`nova_canon1.png` 확인. Nova Cannon (aoe) Lv1 이미지로 적용.
+`TOWER_ASSETS_BY_LEVEL`에 aoe 항목 추가 → GridMap에서 Lv1일 때 nova_canon1.png 사용.
+Lv2/3는 이미지 없으므로 Lv1과 동일 이미지 유지.
+→ 수정 완료.
