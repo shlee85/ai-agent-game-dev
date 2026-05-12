@@ -19,6 +19,11 @@ export const TOWER_ASSETS_BY_LEVEL: Record<string, Record<number, ImageSourcePro
     2: require("../../assets/nova_canon2.png"),
     3: require("../../assets/nova_canon3.png"),
   },
+  slow: {
+    1: require("../../assets/CryoField1.png"),
+    2: require("../../assets/CryoField2.png"),
+    3: require("../../assets/CryoField3.png"),
+  },
 };
 
 export function getTowerImage(towerType: string, level: number): ImageSourcePropType {

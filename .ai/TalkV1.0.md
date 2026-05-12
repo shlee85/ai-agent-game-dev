@@ -824,3 +824,8 @@ Lv2/3는 이미지 없으므로 Lv1과 동일 이미지 유지.
 
 [CLAUDE 답변]
 `nova_canon2.png`, `nova_canon3.png` 확인. `TOWER_ASSETS_BY_LEVEL`의 aoe Lv2/3 경로 교체 완료.
+
+## 질문: 크라오필드에 대한 이미지 추가 했어. level에 맞게 수정해줘. 1이 1레벨, 2가 2레벨 3이 3레벨이야.
+
+[CLAUDE 답변]
+`CryoField1/2/3.png` 확인. `TOWER_ASSETS_BY_LEVEL`에 slow 항목 추가 완료.
