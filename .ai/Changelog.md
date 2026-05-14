@@ -4,6 +4,35 @@
 
 ---
 
+## [2026-05-14] GPT 이미지 전면 교체 + Wave 배경 시스템 + 격자 UI 개선 (`201852d`)
+
+### 상세 변경 사항 요약
+
+1. **타워 레벨별 GPT 이미지 적용**
+   - Pulse Lancer Lv1/2/3, Nova Cannon Lv1/2/3, Cryo Field Lv1/2/3, Volt Striker Lv1/2/3
+   - 레벨에 따라 다른 스프라이트 자동 전환 (`towerAssets.ts` TOWER_ASSETS_BY_LEVEL)
+
+2. **적 GPT 이미지 전면 교체**
+   - Guard Shell / Runner Drone / Phantom Crawler / Siege Golem 전부 GPT 이미지로 교체
+
+3. **Wave 배경 이미지 시스템 추가**
+   - `bg_spaceship.png`: Wave 1~7 (우주선 내부)
+   - `bg_base.png`: Wave 8~14 (군사 기지)
+   - `bg_planet.png`: Wave 15~20 (외계 행성 기지)
+   - `backgroundAssets.ts` `getWaveBackground(waveId)` 함수로 자동 매핑
+
+4. **GridMap UI 전면 개선**
+   - 격자선 완전 제거 — 평상시 배경 이미지 그대로 노출
+   - 배치 모드(타일 탭 시) Green/Red 피드백: 배치 가능(녹색)/불가(빨간) 하이라이트
+   - 장애물 타일(`blockedTiles`) 시스템 추가 — 바위 느낌 렌더링
+   - IN/CORE 텍스트 제거 → 색상 마커(원형/사각)로 교체
+
+5. **StageConfig 확장 및 장애물 배치**
+   - `StageConfig`에 `blockedTiles?: Array<[number, number]>` 필드 추가
+   - Wave 1, Wave 2에 장애물 타일 7개씩 배치
+
+---
+
 ## [2026-05-08] 타워 3단계 업그레이드 + 시즈 골렘 신규 적 추가
 
 ### 상세 변경 사항 요약
