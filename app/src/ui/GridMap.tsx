@@ -4,7 +4,7 @@ import { View, LayoutChangeEvent, Pressable, Text, Animated, Image } from "react
 import { StageConfig } from "../data/stages";
 import { ENEMY_ASSETS } from "../data/enemyAssets";
 import { getTowerImage } from "../data/towerAssets";
-import { getEnemyThreatTag, getTowerRoleTag } from "../data/visualTheme";
+import { getEnemyThreatTag } from "../data/visualTheme";
 
 interface TowerData {
   type: string;
@@ -46,19 +46,19 @@ export interface EnemyData {
   type: string;
   hp: number;
   maxHp: number;
-  baseSpeed: number; // 원래 이동 속도
-  speed: number; // 현재 이동 속도 (디버프 적용됨)
-  pathIndex: number; // 현재 위치한 경로(pathTiles)의 인덱스
-  progress: number; // 0.0 ~ 1.0 (현재 타일과 다음 타일 사이의 진행도)
-  selectedPathIndex?: number; // 멀티 패스일 때 이 적이 사용할 경로 번호
+  baseSpeed: number;
+  speed: number;
+  pathIndex: number;
+  progress: number;
+  selectedPathIndex?: number;
   immuneToSlow?: boolean;
   isSlowed?: boolean;
   slowTimer?: number;
-  hitTimer?: number; // 피격 플래시 타이머
-  color?: string; // 적의 색상 (에셋 교체 전 임시)
-  size?: number; // 적의 렌더링 크기 비율
-  killReward?: number; // 처치 시 획득 골드
-  spawnAt?: number; // 스폰 직후 연출용 타임스탬프
+  hitTimer?: number;
+  color?: string;
+  size?: number;
+  killReward?: number;
+  spawnAt?: number;
 }
 
 interface GridMapProps {
@@ -83,191 +83,6 @@ function getEnemyAsset(type: string) {
   return ENEMY_ASSETS[type] || ENEMY_ASSETS.guard;
 }
 
-function getEnemyPulseScale(enemyType: string, nowMs: number) {
-  if (enemyType !== "runner") return 1;
-  return 1 + Math.sin(nowMs / 120) * 0.045;
-}
-
-function renderTowerVisual(towerType: string, nowMs: number, tileSize: number) {
-  if (towerType === "sniper") {
-    const glow = 0.15 + (Math.sin(nowMs / 260) + 1) * 0.08;
-    return (
-      <View pointerEvents="none" style={{ position: "absolute", width: "100%", height: "100%", alignItems: "center", justifyContent: "center" }}>
-        <View
-          style={{
-            position: "absolute",
-            width: tileSize * 0.9,
-            height: tileSize * 0.9,
-            borderRadius: 999,
-            borderWidth: 1.5,
-            borderColor: "#67e8f9",
-            opacity: glow,
-          }}
-        />
-      </View>
-    );
-  }
-  if (towerType === "aoe") {
-    const pulse = 0.2 + (Math.sin(nowMs / 170) + 1) * 0.14;
-    return (
-      <View pointerEvents="none" style={{ position: "absolute", width: "100%", height: "100%", alignItems: "center", justifyContent: "center" }}>
-        <View
-          style={{
-            position: "absolute",
-            width: tileSize * 0.64,
-            height: tileSize * 0.64,
-            borderRadius: 999,
-            borderWidth: 2,
-            borderColor: "rgba(251, 146, 60, 0.95)",
-            opacity: pulse,
-          }}
-        />
-        <View
-          style={{
-            position: "absolute",
-            width: tileSize * 0.32,
-            height: tileSize * 0.32,
-            borderRadius: 999,
-            backgroundColor: "rgba(251, 146, 60, 0.35)",
-          }}
-        />
-      </View>
-    );
-  }
-  if (towerType === "slow") {
-    const wave = Math.sin(nowMs / 320);
-    return (
-      <View pointerEvents="none" style={{ position: "absolute", width: "100%", height: "100%", alignItems: "center", justifyContent: "center" }}>
-        <View
-          style={{
-            position: "absolute",
-            width: tileSize * (0.56 + wave * 0.05),
-            height: tileSize * 0.16,
-            borderRadius: 999,
-            backgroundColor: "rgba(34, 211, 238, 0.42)",
-          }}
-        />
-        <View
-          style={{
-            position: "absolute",
-            width: tileSize * 0.18,
-            height: tileSize * 0.52,
-            borderRadius: 999,
-            backgroundColor: "rgba(125, 211, 252, 0.32)",
-          }}
-        />
-      </View>
-    );
-  }
-  return null;
-}
-
-function renderEnemyVisual(enemyType: string, nowMs: number, tileSize: number) {
-  if (enemyType === "runner") {
-    const pulse = 0.22 + (Math.sin(nowMs / 120) + 1) * 0.12;
-    return (
-      <View pointerEvents="none" style={{ position: "absolute", width: "100%", height: "100%", alignItems: "center", justifyContent: "center" }}>
-        <View
-          style={{
-            position: "absolute",
-            width: tileSize * 0.44,
-            height: tileSize * 0.2,
-            transform: [{ rotate: "28deg" }],
-            borderRadius: 999,
-            backgroundColor: "rgba(251, 113, 133, 0.9)",
-            opacity: pulse + 0.2,
-          }}
-        />
-        <View
-          style={{
-            position: "absolute",
-            width: tileSize * 0.12,
-            height: tileSize * 0.12,
-            borderRadius: 2,
-            transform: [{ rotate: "45deg" }, { translateX: tileSize * 0.08 }],
-            backgroundColor: "rgba(255, 241, 242, 0.95)",
-          }}
-        />
-      </View>
-    );
-  }
-  if (enemyType === "guard") {
-    const pulse = 0.22 + (Math.sin(nowMs / 260) + 1) * 0.1;
-    return (
-      <View pointerEvents="none" style={{ position: "absolute", width: "100%", height: "100%", alignItems: "center", justifyContent: "center" }}>
-        <View
-          style={{
-            position: "absolute",
-            width: tileSize * 0.58,
-            height: tileSize * 0.58,
-            borderRadius: 999,
-            borderWidth: 2,
-            borderColor: "rgba(251, 113, 133, 0.65)",
-            opacity: pulse,
-          }}
-        />
-        <View
-          style={{
-            position: "absolute",
-            width: tileSize * 0.34,
-            height: tileSize * 0.2,
-            borderRadius: 6,
-            backgroundColor: "rgba(255, 228, 230, 0.42)",
-          }}
-        />
-      </View>
-    );
-  }
-  return null;
-}
-
-function getTowerPulseOpacity(towerType: string, nowMs: number) {
-  if (towerType === "sniper") return 0.25 + (Math.sin(nowMs / 380) + 1) * 0.12;
-  if (towerType === "aoe") return 0.2 + (Math.sin(nowMs / 180) + 1) * 0.18;
-  if (towerType === "slow") return 0.22 + (Math.sin(nowMs / 520) + 1) * 0.1;
-  return 0.3;
-}
-
-function getTowerAccent(towerType: string, tileSize: number, color: string) {
-  if (towerType === "sniper") {
-    return null;
-  }
-  if (towerType === "aoe") {
-    return (
-      <View
-        pointerEvents="none"
-        style={{
-          position: "absolute",
-          top: tileSize * 0.25,
-          width: tileSize * 0.42,
-          height: tileSize * 0.42,
-          borderRadius: 999,
-          borderWidth: 2,
-          borderColor: color,
-          opacity: 0.5,
-        }}
-      />
-    );
-  }
-  if (towerType === "slow") {
-    return (
-      <View
-        pointerEvents="none"
-        style={{
-          position: "absolute",
-          top: tileSize * 0.22,
-          width: tileSize * 0.52,
-          height: tileSize * 0.18,
-          borderRadius: 999,
-          backgroundColor: color,
-          opacity: 0.35,
-        }}
-      />
-    );
-  }
-  return null;
-}
-
 // 플로팅 텍스트 애니메이션 처리를 위한 개별 컴포넌트
 function FloatingTextItem({ data, tileSize }: { data: FloatingTextData; tileSize: number }) {
   const [animValue] = useState(new Animated.Value(0));
@@ -275,19 +90,19 @@ function FloatingTextItem({ data, tileSize }: { data: FloatingTextData; tileSize
   useEffect(() => {
     Animated.timing(animValue, {
       toValue: 1,
-      duration: 800, // 0.8초 동안 위로 떠오르며 페이드아웃
+      duration: 800,
       useNativeDriver: true,
     }).start();
   }, []);
 
   const translateY = animValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -30], // 30픽셀 위로 이동
+    outputRange: [0, -30],
   });
 
   const opacity = animValue.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: [1, 1, 0], // 절반까지 보이다가 서서히 투명
+    outputRange: [1, 1, 0],
   });
 
   return (
@@ -320,8 +135,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
     setContainerSize({ width, height });
   };
 
-  // 타일 크기 자동 계산: 가로/세로 중 더 타이트한 쪽에 맞춰서 tileSize 결정 (여백 제외)
-  const padding = 16; // p-2 (Tailwind 8px * 2) = 16
+  const padding = 16;
   const availableWidth = Math.max(0, containerSize.width - padding);
   const availableHeight = Math.max(0, containerSize.height - padding);
 
@@ -332,14 +146,16 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
     );
   }
 
-  // 화면을 그릴 때 필요한 전체 path 타일과 start 타일 Set
   const allPathTiles = stage.paths ? stage.paths.flat() : stage.pathTiles;
   const pathSet = new Set(allPathTiles.map(([r, c]) => tileKey(r, c)));
-  
+
   const allStartTiles = stage.multiStartTiles ? stage.multiStartTiles : stage.startTiles;
   const startSet = new Set(allStartTiles.map(([r, c]) => tileKey(r, c)));
-  
+
   const goalKey = tileKey(stage.goalTile[0], stage.goalTile[1]);
+  const blockedSet = new Set((stage.blockedTiles || []).map(([r, c]) => tileKey(r, c)));
+
+  const inPlacementMode = selectedCell !== null;
 
   return (
     <View
@@ -360,15 +176,41 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                 const isStart = startSet.has(key);
                 const isGoal = key === goalKey;
                 const isPath = pathSet.has(key);
+                const isBlocked = blockedSet.has(key);
                 const tower = towers[key];
-                const nowMs = Date.now();
-                
-                let bg = "rgba(15, 23, 42, 0.56)"; // 기본 (배치 가능 셀)
-                if (isStart) bg = "rgba(16, 185, 129, 0.42)"; // 시작
-                else if (isGoal) bg = "rgba(244, 63, 94, 0.42)"; // 목표
-                else if (isPath) bg = "rgba(51, 65, 85, 0.7)"; // 길
-
                 const isSelected = selectedCell?.row === row && selectedCell?.col === col;
+
+                const isPlaceable = !isPath && !isStart && !isGoal && !isBlocked && !tower;
+
+                // 평상시 배경: 경로/골/장애물만 구분, 빈 타일은 투명
+                let bg = "transparent";
+                if (isPath || isStart) bg = "rgba(40, 50, 70, 0.82)";
+                else if (isGoal) bg = "rgba(180, 40, 60, 0.55)";
+                else if (isBlocked) bg = "rgba(30, 25, 20, 0.85)";
+
+                // 배치 모드일 때 색상 오버레이
+                let placementBg = "transparent";
+                let borderWidth = 0;
+                let borderColor = "transparent";
+
+                if (inPlacementMode && !isPath && !isStart && !isGoal) {
+                  if (isPlaceable) {
+                    placementBg = "rgba(16, 185, 129, 0.12)";
+                    borderWidth = 0.5;
+                    borderColor = "rgba(16, 185, 129, 0.35)";
+                  } else if (!isBlocked) {
+                    placementBg = "rgba(244, 63, 94, 0.1)";
+                    borderWidth = 0.5;
+                    borderColor = "rgba(244, 63, 94, 0.3)";
+                  }
+                }
+
+                // 선택된 타일 강조
+                if (isSelected) {
+                  placementBg = isPlaceable ? "rgba(16, 185, 129, 0.38)" : "rgba(244, 63, 94, 0.38)";
+                  borderWidth = 2;
+                  borderColor = isPlaceable ? "#10B981" : "#F43F5E";
+                }
 
                 return (
                   <Pressable
@@ -378,56 +220,87 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                       width: tileSize,
                       height: tileSize,
                       backgroundColor: bg,
-                      borderWidth: isSelected ? 2 : 0.5,
-                      borderColor: isSelected ? "#FCD34D" : "rgba(30, 41, 59, 0.5)",
-                      zIndex: isSelected ? 10 : 1, // 선택된 셀이 위로 올라오도록 (테두리 겹침 방지)
+                      zIndex: isSelected ? 10 : 1,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    {isPath && (
+                    {/* 배치 모드 오버레이 */}
+                    {(inPlacementMode || isSelected) && (
                       <View
                         pointerEvents="none"
                         style={{
                           position: "absolute",
-                          width: tileSize * 0.52,
-                          height: tileSize * 0.16,
-                          borderRadius: 999,
-                          backgroundColor: "rgba(148, 163, 184, 0.3)",
+                          top: 0, left: 0, right: 0, bottom: 0,
+                          backgroundColor: placementBg,
+                          borderWidth,
+                          borderColor,
                         }}
                       />
                     )}
+
+                    {/* 경로 타일: 진입/목표 마커 */}
                     {isStart && (
-                      <Text
+                      <View
+                        pointerEvents="none"
                         style={{
                           position: "absolute",
-                          top: 1,
-                          left: 2,
-                          color: "#86EFAC",
-                          fontSize: tileSize * 0.18,
-                          fontWeight: "900",
-                          letterSpacing: 0.5,
+                          width: tileSize * 0.5,
+                          height: tileSize * 0.5,
+                          borderRadius: tileSize * 0.25,
+                          backgroundColor: "rgba(16, 185, 129, 0.6)",
+                          borderWidth: 1.5,
+                          borderColor: "#10B981",
                         }}
-                      >
-                        IN
-                      </Text>
+                      />
                     )}
                     {isGoal && (
-                      <Text
+                      <View
+                        pointerEvents="none"
                         style={{
                           position: "absolute",
-                          top: 1,
-                          right: 2,
-                          color: "#FDA4AF",
-                          fontSize: tileSize * 0.18,
-                          fontWeight: "900",
-                          letterSpacing: 0.5,
+                          width: tileSize * 0.48,
+                          height: tileSize * 0.48,
+                          borderRadius: 4,
+                          backgroundColor: "rgba(244, 63, 94, 0.65)",
+                          borderWidth: 1.5,
+                          borderColor: "#F43F5E",
+                        }}
+                      />
+                    )}
+
+                    {/* 장애물 타일: 바위 느낌 */}
+                    {isBlocked && (
+                      <View
+                        pointerEvents="none"
+                        style={{
+                          position: "absolute",
+                          width: tileSize * 0.72,
+                          height: tileSize * 0.72,
+                          borderRadius: 6,
+                          backgroundColor: "rgba(55, 45, 35, 0.9)",
+                          borderWidth: 1,
+                          borderColor: "rgba(100, 80, 60, 0.6)",
                         }}
                       >
-                        CORE
-                      </Text>
+                        <View style={{
+                          position: "absolute",
+                          top: "20%", left: "15%",
+                          width: "35%", height: "18%",
+                          borderRadius: 3,
+                          backgroundColor: "rgba(120, 100, 80, 0.4)",
+                        }} />
+                        <View style={{
+                          position: "absolute",
+                          top: "55%", left: "40%",
+                          width: "28%", height: "14%",
+                          borderRadius: 2,
+                          backgroundColor: "rgba(120, 100, 80, 0.3)",
+                        }} />
+                      </View>
                     )}
-                    {/* 설치된 타워 시각화 */}
+
+                    {/* 설치된 타워 */}
                     {tower && (
                       <View
                         style={{
@@ -437,77 +310,6 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                           justifyContent: "center",
                         }}
                       >
-                        {/* Lv3: 바깥 링 추가 (시안 글로우) */}
-                        {tower.level >= 3 && (
-                          <View
-                            style={{
-                              position: "absolute",
-                              width: tileSize * 1.12,
-                              height: tileSize * 1.12,
-                              borderRadius: 999,
-                              borderWidth: 2.5,
-                              borderColor: "#22d3ee",
-                              opacity: 0.7 + 0.3 * Math.sin(nowMs / 300),
-                            }}
-                          />
-                        )}
-                        {/* Lv2+: 골드 외곽 링 */}
-                        {tower.level >= 2 && (
-                          <View
-                            style={{
-                              position: "absolute",
-                              width: tileSize * 1.04,
-                              height: tileSize * 1.04,
-                              borderRadius: 999,
-                              borderWidth: tower.level >= 3 ? 2 : 1.5,
-                              borderColor: tower.level >= 3 ? "#22d3ee" : "#fbbf24",
-                              opacity: tower.level >= 3 ? 0.9 : 0.75,
-                            }}
-                          />
-                        )}
-                        <View
-                          style={{
-                            position: "absolute",
-                            width: tileSize * 0.98,
-                            height: tileSize * 0.98,
-                            borderRadius: 999,
-                            backgroundColor: tower.color || "#22d3ee",
-                            opacity: getTowerPulseOpacity(tower.type, nowMs) * 0.24,
-                          }}
-                        />
-                        <View
-                          style={{
-                            position: "absolute",
-                            width: tileSize * 0.88,
-                            height: tileSize * 0.88,
-                            borderRadius: 999,
-                            borderWidth: tower.level >= 3 ? 3 : tower.level >= 2 ? 2.5 : 1.5,
-                            borderColor: tower.level >= 3 ? "#22d3ee" : tower.level >= 2 ? "#fbbf24" : (tower.color || "#67e8f9"),
-                            opacity: tower.level >= 2 ? 1.0 : 0.6,
-                          }}
-                        />
-                        <View
-                          style={{
-                            position: "absolute",
-                            bottom: tileSize * 0.03,
-                            width: tileSize * 0.54,
-                            height: tileSize * 0.15,
-                            borderRadius: 999,
-                            backgroundColor: "rgba(2, 6, 23, 0.55)",
-                          }}
-                        />
-                        <View
-                          pointerEvents="none"
-                          style={{
-                            position: "absolute",
-                            top: tileSize * 0.2,
-                            width: tileSize * 0.6,
-                            height: tileSize * 0.06,
-                            borderRadius: 999,
-                            backgroundColor: "rgba(148, 163, 184, 0.35)",
-                            transform: [{ translateY: Math.sin(nowMs / 450) * 1.3 }],
-                          }}
-                        />
                         <Image
                           source={getTowerImage(tower.type, tower.level)}
                           style={{
@@ -517,67 +319,6 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                           }}
                           resizeMode="contain"
                         />
-                        {renderTowerVisual(tower.type, nowMs, tileSize)}
-                        {getTowerAccent(tower.type, tileSize, tower.color || "#67e8f9")}
-                        <View
-                          style={{
-                            position: "absolute",
-                            top: -2,
-                            left: -1,
-                            borderRadius: 4,
-                            backgroundColor: "rgba(2, 6, 23, 0.86)",
-                            borderWidth: 1,
-                            borderColor: tower.color || "#67e8f9",
-                            paddingHorizontal: 3,
-                            paddingVertical: 1,
-                          }}
-                        >
-                          <Text style={{ color: tower.color || "#67e8f9", fontWeight: "900", fontSize: tileSize * 0.12 }}>
-                            {getTowerRoleTag(tower.type)}
-                          </Text>
-                        </View>
-                        {tower.level === 2 && (
-                          <View
-                            style={{
-                              position: "absolute",
-                              bottom: -4,
-                              right: -4,
-                              backgroundColor: "#fbbf24",
-                              borderWidth: 1.5,
-                              borderColor: "#fef3c7",
-                              borderRadius: 999,
-                              width: tileSize * 0.30,
-                              height: tileSize * 0.30,
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Text style={{ color: "#111827", fontWeight: "900", fontSize: tileSize * 0.16 }}>
-                              2
-                            </Text>
-                          </View>
-                        )}
-                        {tower.level >= 3 && (
-                          <View
-                            style={{
-                              position: "absolute",
-                              bottom: -4,
-                              right: -4,
-                              backgroundColor: "#06b6d4",
-                              borderWidth: 2,
-                              borderColor: "#e0f2fe",
-                              borderRadius: 5,
-                              paddingHorizontal: tileSize * 0.04,
-                              paddingVertical: tileSize * 0.02,
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Text style={{ color: "#fff", fontWeight: "900", fontSize: tileSize * 0.14, letterSpacing: 0.5 }}>
-                              MAX
-                            </Text>
-                          </View>
-                        )}
                       </View>
                     )}
                   </Pressable>
@@ -593,28 +334,13 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
             const nextTile = ePath[enemy.pathIndex + 1];
             if (!currentTile) return null;
 
-            // 목적지에 도착한 상태라면 현재 타일에 고정
             const targetTile = nextTile || currentTile;
-            
-            // 보간(Interpolation)을 통한 픽셀 단위 부드러운 위치 계산
             const row = currentTile[0] + (targetTile[0] - currentTile[0]) * enemy.progress;
             const col = currentTile[1] + (targetTile[1] - currentTile[1]) * enemy.progress;
             const nowMs = Date.now();
-            const directionRow = targetTile[0] - currentTile[0];
-            const directionCol = targetTile[1] - currentTile[1];
-            const directionLen = Math.max(0.001, Math.sqrt(directionRow * directionRow + directionCol * directionCol));
-            const unitRow = directionRow / directionLen;
-            const unitCol = directionCol / directionLen;
-            const isRunner = enemy.type === "runner";
-            const isGuard = enemy.type === "guard";
             const spawnElapsed = nowMs - (enemy.spawnAt || nowMs);
             const showSpawnFlash = spawnElapsed < 280;
             const spawnFlashOpacity = Math.max(0, 0.45 - spawnElapsed / 650);
-            const runnerPulseScale = getEnemyPulseScale(enemy.type, nowMs);
-            const guardBounceOffset = isGuard ? Math.sin(nowMs / 200) * 2.2 : 0;
-            const runnerThreatPulse = isRunner ? 0.42 + Math.sin(nowMs / 90) * 0.14 : 0.3;
-            const guardPlateOpacity = isGuard ? 0.24 + Math.sin(nowMs / 420) * 0.08 : 0;
-
             const isHit = enemy.hitTimer && enemy.hitTimer > 0;
 
             return (
@@ -628,8 +354,8 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                   height: tileSize,
                   alignItems: "center",
                   justifyContent: "center",
-                  zIndex: 20, // 타워/타일보다 위에 표시
-                  pointerEvents: "none", // 터치 방해 금지
+                  zIndex: 20,
+                  pointerEvents: "none",
                 }}
               >
                 <View
@@ -637,100 +363,19 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                     width: tileSize * (enemy.size || 0.6),
                     height: tileSize * (enemy.size || 0.6),
                     borderRadius: 6,
-                    borderWidth: 2,
-                    borderColor: isHit ? "#FFFFFF" : enemy.isSlowed ? "#60A5FA" : "#7F1D1D",
-                    backgroundColor: "rgba(15, 23, 42, 0.35)",
+                    borderWidth: isHit ? 2 : enemy.isSlowed ? 1.5 : 0,
+                    borderColor: isHit ? "#FFFFFF" : enemy.isSlowed ? "#60A5FA" : "transparent",
                     alignItems: "center",
                     justifyContent: "center",
                     overflow: "hidden",
-                    transform: [{ translateY: guardBounceOffset }, { scale: runnerPulseScale }],
                   }}
                 >
-                  <View
-                    style={{
-                      position: "absolute",
-                      width: "112%",
-                      height: "112%",
-                      borderRadius: 999,
-                      borderWidth: 1.2,
-                      borderColor: "rgba(251, 113, 133, 0.7)",
-                      opacity: isRunner ? runnerThreatPulse : 0.4,
-                    }}
-                  />
-                  {isRunner && (
-                    <View
-                      style={{
-                        position: "absolute",
-                        top: -5,
-                        width: tileSize * 0.12,
-                        height: tileSize * 0.12,
-                        transform: [{ rotate: "45deg" }],
-                        backgroundColor: "rgba(251, 113, 133, 0.85)",
-                      }}
-                    />
-                  )}
-                  {isGuard && (
-                    <View
-                      style={{
-                        position: "absolute",
-                        width: "72%",
-                        height: "22%",
-                        top: "38%",
-                        borderRadius: 999,
-                        backgroundColor: "rgba(255, 255, 255, 0.8)",
-                        opacity: guardPlateOpacity,
-                      }}
-                    />
-                  )}
-                  {isRunner && (
-                    <View
-                      pointerEvents="none"
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        right: 0,
-                        bottom: 0,
-                        left: 0,
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <Image
-                        source={getEnemyAsset(enemy.type)}
-                        style={{
-                          position: "absolute",
-                          width: "90%",
-                          height: "90%",
-                          opacity: 0.18,
-                          transform: [
-                            { translateX: -unitCol * tileSize * 0.18 },
-                            { translateY: -unitRow * tileSize * 0.18 },
-                          ],
-                        }}
-                        resizeMode="contain"
-                      />
-                      <Image
-                        source={getEnemyAsset(enemy.type)}
-                        style={{
-                          position: "absolute",
-                          width: "84%",
-                          height: "84%",
-                          opacity: 0.12,
-                          transform: [
-                            { translateX: -unitCol * tileSize * 0.3 },
-                            { translateY: -unitRow * tileSize * 0.3 },
-                          ],
-                        }}
-                        resizeMode="contain"
-                      />
-                    </View>
-                  )}
                   <Image
                     source={getEnemyAsset(enemy.type)}
                     style={{ width: "100%", height: "100%" }}
                     resizeMode="contain"
                   />
-                  {renderEnemyVisual(enemy.type, nowMs, tileSize)}
+                  {/* 슬로우 파란 틴트 */}
                   {enemy.isSlowed && (
                     <View
                       style={{
@@ -743,6 +388,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                       }}
                     />
                   )}
+                  {/* 피격 흰 플래시 */}
                   {isHit && (
                     <View
                       style={{
@@ -755,6 +401,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                       }}
                     />
                   )}
+                  {/* 스폰 플래시 */}
                   {showSpawnFlash && (
                     <View
                       style={{
@@ -789,7 +436,6 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
             );
           })}
 
-          {/* 공격 이펙트 렌더링 */}
           {/* 발사체 렌더링 */}
           {projectiles.map((proj) => {
             const now = Date.now();
@@ -822,6 +468,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
             );
           })}
 
+          {/* 공격 이펙트 렌더링 */}
           {attackEffects.map((effect) => {
             const commonStyle = {
               position: "absolute" as const,
@@ -946,7 +593,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
             <FloatingTextItem key={txt.id} data={txt} tileSize={tileSize} />
           ))}
 
-          {/* 사거리 표시 렌더링 (홀로그램 레이더 스타일) */}
+          {/* 사거리 표시 렌더링 */}
           {rangeDisplay && (
             <View
               style={{
@@ -956,11 +603,11 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                 width: rangeDisplay.radius * 2 * tileSize,
                 height: rangeDisplay.radius * 2 * tileSize,
                 borderRadius: 9999,
-                backgroundColor: "rgba(6, 182, 212, 0.08)", // Cyan 500
+                backgroundColor: "rgba(6, 182, 212, 0.08)",
                 borderWidth: 1.5,
                 borderColor: "rgba(6, 182, 212, 0.6)",
-                borderStyle: "dashed", // 레이더 느낌의 점선
-                zIndex: 5, // 타워보다는 아래, 배경보다는 위
+                borderStyle: "dashed",
+                zIndex: 5,
                 pointerEvents: "none",
               }}
             />

@@ -17,6 +17,7 @@ import { TowerMenu } from "../ui/TowerMenu";
 import { ItemShop } from "../ui/ItemShop";
 import { useLanguage } from "../contexts/LanguageContext";
 import { soundManager } from "../utils/soundManager";
+import { getWaveBackground } from "../data/backgroundAssets";
 
 type GameState = "playing" | "game_over" | "wave_clear" | "paused";
 
@@ -810,9 +811,9 @@ export function WaveScreen({
 
   return (
     <ImageBackground 
-      source={require('../../assets/bg.png')} 
+      source={getWaveBackground(waveId)}
       className="flex-1 bg-slate-950 relative"
-      imageStyle={{ opacity: 0.4 }}
+      imageStyle={{ opacity: 0.7 }}
     >
       {/* 맵 영역 (터치 시 선택 해제를 위해 Pressable로 감싸지만 GridMap 내의 터치는 방해하지 않음) */}
       <Pressable className="flex-1" onPress={() => setSelectedCell(null)}>

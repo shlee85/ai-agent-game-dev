@@ -24,6 +24,11 @@ export const TOWER_ASSETS_BY_LEVEL: Record<string, Record<number, ImageSourcePro
     2: require("../../assets/CryoField2.png"),
     3: require("../../assets/CryoField3.png"),
   },
+  chain: {
+    1: require("../../assets/VoltStriker1.png"),
+    2: require("../../assets/VoltStriker2.png"),
+    3: require("../../assets/VoltStriker3.png"),
+  },
 };
 
 export function getTowerImage(towerType: string, level: number): ImageSourcePropType {

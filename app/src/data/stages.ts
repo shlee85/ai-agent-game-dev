@@ -4,10 +4,9 @@ export interface StageConfig {
   pathTiles: Array<[number, number]>;
   startTiles: Array<[number, number]>;
   goalTile: [number, number];
-  // 다중 경로를 지원하기 위해 pathTiles를 여러 개 가질 수 있는 옵션 추가
   paths?: Array<Array<[number, number]>>;
-  // 각 경로별 시작 타일
   multiStartTiles?: Array<[number, number]>;
+  blockedTiles?: Array<[number, number]>;
 }
 
 const wave1Path: Array<[number, number]> = [
@@ -191,6 +190,7 @@ export const STAGE_CONFIG: Record<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 
     pathTiles: wave1Path,
     startTiles: [[0, 3]],
     goalTile: [8, 13],
+    blockedTiles: [[1, 6], [2, 9], [3, 12], [6, 2], [7, 10], [2, 14], [6, 12]],
   },
   2: {
     rows: 9,
@@ -198,6 +198,7 @@ export const STAGE_CONFIG: Record<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 
     pathTiles: wave2Path,
     startTiles: [[0, 1]],
     goalTile: [8, 12],
+    blockedTiles: [[1, 3], [3, 7], [5, 4], [7, 1], [2, 14], [6, 7], [8, 9]],
   },
   3: {
     rows: 9,
