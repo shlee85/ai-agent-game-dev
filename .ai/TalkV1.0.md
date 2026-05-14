@@ -961,3 +961,18 @@ IN/CORE 텍스트도 제거하고 색상으로만 구분.
 [CLAUDE 답변]
 
 `Talk1.0~5.0.md` → `Beta1.0~5.0.md` 변경 완료. `TalkV1.0.md`는 현재 v1.0 진행 로그라 유지. 커밋 `3083c5a`.
+
+## 질문: 그리고 현재 github repo쪽에 이름이  DepensGame1로 되어 있는데 이걸 AI Agent를 활용한 게임개발로 변경 하고 싶은데 변경 가능하니? 가능하다면 이름은 뭘로 하는게 좋을까?
+
+[CLAUDE 답변]
+
+GitHub 웹 Settings에서 직접 변경 필요 (gh CLI 미설치). 이름은 `ai-agent-game-dev` 추천.
+변경 후 로컬 remote URL 업데이트 필요.
+
+## 질문: 응 이름은 ai-agent-game-dev로 했음. 니가 이제 remote 변경하도록해
+
+[CLAUDE 답변]
+
+remote URL 변경 및 push 완료.
+
+`git@github.com:shlee85/DepensGame1.git` → `git@github.com:shlee85/ai-agent-game-dev.git`
