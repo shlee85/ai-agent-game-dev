@@ -183,7 +183,7 @@ export function WaveScreen({
   // 사운드 초기화 및 BGM
   useEffect(() => {
     soundManager.init().then(() => {
-      const bgmKey = waveId <= 7 ? "bgm_wave1" : "bgm_wave2";
+      const bgmKey = waveId <= 7 ? "bgm_wave1" : waveId <= 14 ? "bgm_wave2" : "bgm_wave3";
       soundManager.playBgm(bgmKey, 0.35);
     });
     return () => {

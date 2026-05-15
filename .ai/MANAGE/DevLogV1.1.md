@@ -108,3 +108,20 @@ Android Bundled 10768ms index.ts (1199 modules)
 **④ setBehaviorAsync not supported**
 - edge-to-edge 활성화 시 발생하는 시스템 WARN — 게임 기능에 영향 없음, 무시해도 됨
 
+## 질문:그럼 4번째 트랙 추가 했니?
+[CLAUDE 답변]
+
+안 됐었다. 파일만 이동하고 코드 연결을 빠뜨렸음. 지금 추가 완료.
+
+- `soundManager.ts`: `bgm_wave3` SoundKey 추가 + `The_Iron_Vanguard.mp3` 연결
+- `WaveScreen.tsx`: `waveId >= 15` → `bgm_wave3` 분기 추가
+
+최종 BGM 구간:
+| waveId | BGM 키 | 파일 |
+|---|---|---|
+| 로비 | `bgm_lobby` | The_Sovereign_Gate.mp3 |
+| 1~7 | `bgm_wave1` | Iron_Perimeter.mp3 |
+| 8~14 | `bgm_wave2` | Siege_of_the_Iron_Moon.mp3 |
+| 15~20 | `bgm_wave3` | The_Iron_Vanguard.mp3 |
+
+

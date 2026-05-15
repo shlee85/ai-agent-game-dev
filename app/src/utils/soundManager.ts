@@ -12,7 +12,8 @@ type SoundKey =
   | "sfx_enemy_leak"
   | "bgm_lobby"
   | "bgm_wave1"
-  | "bgm_wave2";
+  | "bgm_wave2"
+  | "bgm_wave3";
 
 const SOUND_ASSETS: Record<SoundKey, ReturnType<typeof require>> = {
   sfx_attack_sniper: require("../../assets/sounds/sfx_attack_sniper.wav"),
@@ -26,6 +27,7 @@ const SOUND_ASSETS: Record<SoundKey, ReturnType<typeof require>> = {
   bgm_lobby:  require("../../assets/music/The_Sovereign_Gate.mp3"),
   bgm_wave1:  require("../../assets/music/Iron_Perimeter.mp3"),
   bgm_wave2:  require("../../assets/music/Siege_of_the_Iron_Moon.mp3"),
+  bgm_wave3:  require("../../assets/music/The_Iron_Vanguard.mp3"),
 };
 
 class SoundManager {
