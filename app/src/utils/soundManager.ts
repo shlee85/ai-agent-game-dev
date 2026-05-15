@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import type { AudioPlayer } from "expo-audio";
 
@@ -35,16 +36,42 @@ class SoundManager {
   private bgmPlayer: AudioPlayer | null = null;
   private currentBgmKey: SoundKey | null = null;
   private sfxCooldowns: Partial<Record<SoundKey, number>> = {};
+  private pendingBgmKey: SoundKey | null = null;
+  private pendingBgmVolume = 0.4;
+
+  bgmEnabled = true;
+  sfxEnabled = true;
 
   async init() {
     await setAudioModeAsync({
       playsInSilentMode: true,
       shouldPlayInBackground: false,
     });
+    try {
+      const results = await AsyncStorage.multiGet(["settings_bgm", "settings_sfx"]);
+      this.bgmEnabled = results[0][1] !== "0";
+      this.sfxEnabled = results[1][1] !== "0";
+    } catch (_) {}
+  }
+
+  async setBgmEnabled(enabled: boolean) {
+    this.bgmEnabled = enabled;
+    try { await AsyncStorage.setItem("settings_bgm", enabled ? "1" : "0"); } catch (_) {}
+    if (!enabled) {
+      this.stopBgm();
+    } else if (this.pendingBgmKey) {
+      await this.playBgm(this.pendingBgmKey, this.pendingBgmVolume);
+    }
+  }
+
+  async setSfxEnabled(enabled: boolean) {
+    this.sfxEnabled = enabled;
+    try { await AsyncStorage.setItem("settings_sfx", enabled ? "1" : "0"); } catch (_) {}
   }
 
   // SFX: 캐시에서 로드해서 즉시 재생 (쿨타임으로 중복 방지)
   async playSfx(key: SoundKey, volume = 0.8, cooldownMs = 80) {
+    if (!this.sfxEnabled) return;
     const now = Date.now();
     const last = this.sfxCooldowns[key] ?? 0;
     if (now - last < cooldownMs) return;
@@ -64,6 +91,9 @@ class SoundManager {
 
   // BGM: 루핑 재생
   async playBgm(key: SoundKey, volume = 0.4) {
+    this.pendingBgmKey = key;
+    this.pendingBgmVolume = volume;
+    if (!this.bgmEnabled) return;
     if (this.currentBgmKey === key) return;
     this.stopBgm();
     try {

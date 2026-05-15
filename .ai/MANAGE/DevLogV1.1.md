@@ -124,4 +124,21 @@ Android Bundled 10768ms index.ts (1199 modules)
 | 8~14 | `bgm_wave2` | Siege_of_the_Iron_Moon.mp3 |
 | 15~20 | `bgm_wave3` | The_Iron_Vanguard.mp3 |
 
+## 질문: 설정에 배경음악과 이팩트 효과 on/off메뉴 추가해줘
+[CLAUDE 답변]
 
+BGM / SFX ON/OFF 토글 추가 완료. 설정은 AsyncStorage에 영구 저장됨.
+
+**추가된 위치:**
+- 로비 화면 ⚙️ 설정 패널 (기존 RESET 버튼 위)
+- 게임 일시정지 메뉴 (Continue 버튼 위, 가로 2열 배치)
+
+**동작:**
+- BGM OFF → 즉시 BGM 정지. ON 복구 시 현재 구간 BGM 자동 재시작
+- SFX OFF → 이후 모든 공격/이펙트 효과음 무음
+- 앱 재시작 후에도 설정 유지 (AsyncStorage `settings_bgm` / `settings_sfx`)
+
+**변경 파일:**
+- `soundManager.ts`: `bgmEnabled` / `sfxEnabled` 플래그 + `setBgmEnabled()` / `setSfxEnabled()` 메서드 추가
+- `LobbyScreen.tsx`: 설정 패널에 BGM/SFX 토글 추가
+- `WaveScreen.tsx`: 일시정지 메뉴에 BGM/SFX 토글 추가

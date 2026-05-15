@@ -78,6 +78,9 @@ export function WaveScreen({
   const tutorialAnim = useRef(new Animated.Value(0)).current;
   const tutorialActiveRef = useRef(waveId === 1); // Wave 1은 튜토리얼 확인 전까지 잠시 정지
 
+  const [bgmOn, setBgmOn] = useState(true);
+  const [sfxOn, setSfxOn] = useState(true);
+
   const [isQuickPaused, setIsQuickPaused] = useState(false);
   const isQuickPausedRef = useRef(false);
 
@@ -185,6 +188,8 @@ export function WaveScreen({
     soundManager.init().then(() => {
       const bgmKey = waveId <= 7 ? "bgm_wave1" : waveId <= 14 ? "bgm_wave2" : "bgm_wave3";
       soundManager.playBgm(bgmKey, 0.35);
+      setBgmOn(soundManager.bgmEnabled);
+      setSfxOn(soundManager.sfxEnabled);
     });
     return () => {
       soundManager.stopBgm();
@@ -1117,8 +1122,49 @@ export function WaveScreen({
             <Text className="text-3xl font-black text-slate-200">{t.pauseTitle}</Text>
             <Text className="mt-2 text-slate-400 text-sm">{t.pauseDesc}</Text>
 
+            {/* BGM / SFX 토글 */}
+            <View className="mt-5 w-full flex-row gap-2">
+              <TouchableOpacity
+                onPress={async () => {
+                  const next = !bgmOn;
+                  setBgmOn(next);
+                  await soundManager.setBgmEnabled(next);
+                }}
+                className="flex-1 flex-row items-center justify-between rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 active:opacity-80"
+              >
+                <View className="flex-row items-center gap-1">
+                  <Ionicons name="musical-notes" size={13} color="#94A3B8" />
+                  <Text className="text-xs font-bold text-slate-300">BGM</Text>
+                </View>
+                <View style={{ backgroundColor: bgmOn ? "#059669" : "#334155", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
+                  <Text style={{ color: bgmOn ? "#D1FAE5" : "#94A3B8", fontSize: 10, fontWeight: "900" }}>
+                    {bgmOn ? "ON" : "OFF"}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={async () => {
+                  const next = !sfxOn;
+                  setSfxOn(next);
+                  await soundManager.setSfxEnabled(next);
+                }}
+                className="flex-1 flex-row items-center justify-between rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 active:opacity-80"
+              >
+                <View className="flex-row items-center gap-1">
+                  <Ionicons name="volume-high" size={13} color="#94A3B8" />
+                  <Text className="text-xs font-bold text-slate-300">SFX</Text>
+                </View>
+                <View style={{ backgroundColor: sfxOn ? "#059669" : "#334155", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 }}>
+                  <Text style={{ color: sfxOn ? "#D1FAE5" : "#94A3B8", fontSize: 10, fontWeight: "900" }}>
+                    {sfxOn ? "ON" : "OFF"}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
-              className="mt-8 w-full rounded-xl bg-emerald-600 px-8 py-3 border border-emerald-500 active:bg-emerald-700"
+              className="mt-5 w-full rounded-xl bg-emerald-600 px-8 py-3 border border-emerald-500 active:bg-emerald-700"
               onPress={() => setGameState("playing")}
             >
               <Text className="text-slate-100 font-bold text-lg text-center">{t.continueGame}</Text>

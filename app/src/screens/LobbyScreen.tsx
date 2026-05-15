@@ -35,6 +35,8 @@ export function LobbyScreen({
   const [allMaxUnlocked, setAllMaxUnlocked] = useState<Record<Difficulty, number>>({ easy: 1, normal: 1, hard: 1 });
   const [selectedDiff, setSelectedDiff] = useState<Difficulty>(initialDifficulty);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [bgmOn, setBgmOn] = useState(true);
+  const [sfxOn, setSfxOn] = useState(true);
   const WAVE_CARD_SIZE = 64;
   const WAVE_GAP = 8;
   const VISIBLE_WAVE_COUNT = 6;
@@ -65,6 +67,8 @@ export function LobbyScreen({
   useEffect(() => {
     soundManager.init().then(() => {
       soundManager.playBgm("bgm_lobby", 0.4);
+      setBgmOn(soundManager.bgmEnabled);
+      setSfxOn(soundManager.sfxEnabled);
     });
     return () => { soundManager.stopBgm(); };
   }, []);
@@ -287,6 +291,48 @@ export function LobbyScreen({
       {settingsOpen && (
         <View className="absolute bottom-24 right-4 rounded-2xl border border-slate-600 bg-slate-900/98 p-4 gap-3" style={{ minWidth: 200 }}>
           <Text className="text-xs font-black tracking-widest text-slate-400 mb-1">SETTINGS</Text>
+
+          {/* BGM 토글 */}
+          <TouchableOpacity
+            onPress={async () => {
+              const next = !bgmOn;
+              setBgmOn(next);
+              await soundManager.setBgmEnabled(next);
+            }}
+            className="flex-row items-center justify-between rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 active:opacity-80"
+          >
+            <View className="flex-row items-center gap-2">
+              <Ionicons name="musical-notes" size={14} color="#94A3B8" />
+              <Text className="text-xs font-bold text-slate-300">BGM</Text>
+            </View>
+            <View style={{ backgroundColor: bgmOn ? "#059669" : "#334155", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2 }}>
+              <Text style={{ color: bgmOn ? "#D1FAE5" : "#94A3B8", fontSize: 10, fontWeight: "900" }}>
+                {bgmOn ? "ON" : "OFF"}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* SFX 토글 */}
+          <TouchableOpacity
+            onPress={async () => {
+              const next = !sfxOn;
+              setSfxOn(next);
+              await soundManager.setSfxEnabled(next);
+            }}
+            className="flex-row items-center justify-between rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 active:opacity-80"
+          >
+            <View className="flex-row items-center gap-2">
+              <Ionicons name="volume-high" size={14} color="#94A3B8" />
+              <Text className="text-xs font-bold text-slate-300">SFX</Text>
+            </View>
+            <View style={{ backgroundColor: sfxOn ? "#059669" : "#334155", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 2 }}>
+              <Text style={{ color: sfxOn ? "#D1FAE5" : "#94A3B8", fontSize: 10, fontWeight: "900" }}>
+                {sfxOn ? "ON" : "OFF"}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* 진행도 초기화 */}
           <TouchableOpacity
             onPress={async () => {
               await AsyncStorage.removeItem(`maxUnlockedWave_${selectedDiff}`);
