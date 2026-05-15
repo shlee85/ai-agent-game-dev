@@ -148,16 +148,179 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
     );
   }
 
-  const allPathTiles = stage.paths ? stage.paths.flat() : stage.pathTiles;
-  const pathSet = new Set(allPathTiles.map(([r, c]) => tileKey(r, c)));
+  // onSelectCell은 매 렌더마다 새 참조이므로 ref로 안정화
+  const onSelectCellRef = React.useRef(onSelectCell);
+  onSelectCellRef.current = onSelectCell;
 
-  const allStartTiles = stage.multiStartTiles ? stage.multiStartTiles : stage.startTiles;
-  const startSet = new Set(allStartTiles.map(([r, c]) => tileKey(r, c)));
+  // 타일 그리드: 적 이동 시에는 리렌더 없이, 타워 배치/발사/셀 선택 시에만 재계산
+  const tileRows = React.useMemo(() => {
+    const allPathTiles = stage.paths ? stage.paths.flat() : stage.pathTiles;
+    const pathSet = new Set(allPathTiles.map(([r, c]) => tileKey(r, c)));
+    const allStartTiles = stage.multiStartTiles ? stage.multiStartTiles : stage.startTiles;
+    const startSet = new Set(allStartTiles.map(([r, c]) => tileKey(r, c)));
+    const goalKey = tileKey(stage.goalTile[0], stage.goalTile[1]);
+    const blockedSet = new Set((stage.blockedTiles || []).map(([r, c]) => tileKey(r, c)));
+    const inPlacementMode = selectedCell !== null;
 
-  const goalKey = tileKey(stage.goalTile[0], stage.goalTile[1]);
-  const blockedSet = new Set((stage.blockedTiles || []).map(([r, c]) => tileKey(r, c)));
+    return Array.from({ length: stage.rows }).map((_, row) => (
+      <View key={`row-${row}`} className="flex-row">
+        {Array.from({ length: stage.cols }).map((__, col) => {
+          const key = tileKey(row, col);
+          const isStart = startSet.has(key);
+          const isGoal = key === goalKey;
+          const isPath = pathSet.has(key);
+          const isBlocked = blockedSet.has(key);
+          const tower = towers[key];
+          const isSelected = selectedCell?.row === row && selectedCell?.col === col;
 
-  const inPlacementMode = selectedCell !== null;
+          const isPlaceable = !isPath && !isStart && !isGoal && !isBlocked && !tower;
+
+          // 평상시 배경: 경로/골/장애물만 구분, 빈 타일은 투명
+          let bg = "transparent";
+          if (isPath || isStart) bg = "rgba(40, 50, 70, 0.82)";
+          else if (isGoal) bg = "rgba(180, 40, 60, 0.55)";
+          else if (isBlocked) bg = "rgba(30, 25, 20, 0.85)";
+
+          // 배치 모드일 때 색상 오버레이
+          let placementBg = "transparent";
+          let borderWidth = 0;
+          let borderColor = "transparent";
+
+          if (inPlacementMode && !isPath && !isStart && !isGoal) {
+            if (isPlaceable) {
+              placementBg = "rgba(16, 185, 129, 0.12)";
+              borderWidth = 0.5;
+              borderColor = "rgba(16, 185, 129, 0.35)";
+            } else if (!isBlocked) {
+              placementBg = "rgba(244, 63, 94, 0.1)";
+              borderWidth = 0.5;
+              borderColor = "rgba(244, 63, 94, 0.3)";
+            }
+          }
+
+          // 선택된 타일 강조
+          if (isSelected) {
+            placementBg = isPlaceable ? "rgba(16, 185, 129, 0.38)" : "rgba(244, 63, 94, 0.38)";
+            borderWidth = 2;
+            borderColor = isPlaceable ? "#10B981" : "#F43F5E";
+          }
+
+          return (
+            <Pressable
+              key={key}
+              onPress={() => onSelectCellRef.current(row, col)}
+              style={{
+                width: tileSize,
+                height: tileSize,
+                backgroundColor: bg,
+                zIndex: isSelected ? 10 : 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {/* 배치 모드 오버레이 */}
+              {(inPlacementMode || isSelected) && (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: placementBg,
+                    borderWidth,
+                    borderColor,
+                  }}
+                />
+              )}
+
+              {/* 경로 타일: 진입/목표 마커 */}
+              {isStart && (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    width: tileSize * 0.5,
+                    height: tileSize * 0.5,
+                    borderRadius: tileSize * 0.25,
+                    backgroundColor: "rgba(16, 185, 129, 0.6)",
+                    borderWidth: 1.5,
+                    borderColor: "#10B981",
+                  }}
+                />
+              )}
+              {isGoal && (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    width: tileSize * 0.48,
+                    height: tileSize * 0.48,
+                    borderRadius: 4,
+                    backgroundColor: "rgba(244, 63, 94, 0.65)",
+                    borderWidth: 1.5,
+                    borderColor: "#F43F5E",
+                  }}
+                />
+              )}
+
+              {/* 장애물 타일: 바위 느낌 */}
+              {isBlocked && (
+                <View
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    width: tileSize * 0.72,
+                    height: tileSize * 0.72,
+                    borderRadius: 6,
+                    backgroundColor: "rgba(55, 45, 35, 0.9)",
+                    borderWidth: 1,
+                    borderColor: "rgba(100, 80, 60, 0.6)",
+                  }}
+                >
+                  <View style={{
+                    position: "absolute",
+                    top: "20%", left: "15%",
+                    width: "35%", height: "18%",
+                    borderRadius: 3,
+                    backgroundColor: "rgba(120, 100, 80, 0.4)",
+                  }} />
+                  <View style={{
+                    position: "absolute",
+                    top: "55%", left: "40%",
+                    width: "28%", height: "14%",
+                    borderRadius: 2,
+                    backgroundColor: "rgba(120, 100, 80, 0.3)",
+                  }} />
+                </View>
+              )}
+
+              {/* 설치된 타워 */}
+              {tower && (
+                <View
+                  style={{
+                    width: tileSize * 0.74,
+                    height: tileSize * 0.74,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Image
+                    source={getTowerImage(tower.type, tower.level)}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      transform: [{ rotate: `${towerAngles[key] ?? 0}deg` }],
+                    }}
+                    resizeMode="contain"
+                  />
+                </View>
+              )}
+            </Pressable>
+          );
+        })}
+      </View>
+    ));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, tileSize, selectedCell, towers, towerAngles]);
 
   return (
     <View
@@ -171,163 +334,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
             height: tileSize * stage.rows,
           }}
         >
-          {Array.from({ length: stage.rows }).map((_, row) => (
-            <View key={`row-${row}`} className="flex-row">
-              {Array.from({ length: stage.cols }).map((__, col) => {
-                const key = tileKey(row, col);
-                const isStart = startSet.has(key);
-                const isGoal = key === goalKey;
-                const isPath = pathSet.has(key);
-                const isBlocked = blockedSet.has(key);
-                const tower = towers[key];
-                const isSelected = selectedCell?.row === row && selectedCell?.col === col;
-
-                const isPlaceable = !isPath && !isStart && !isGoal && !isBlocked && !tower;
-
-                // 평상시 배경: 경로/골/장애물만 구분, 빈 타일은 투명
-                let bg = "transparent";
-                if (isPath || isStart) bg = "rgba(40, 50, 70, 0.82)";
-                else if (isGoal) bg = "rgba(180, 40, 60, 0.55)";
-                else if (isBlocked) bg = "rgba(30, 25, 20, 0.85)";
-
-                // 배치 모드일 때 색상 오버레이
-                let placementBg = "transparent";
-                let borderWidth = 0;
-                let borderColor = "transparent";
-
-                if (inPlacementMode && !isPath && !isStart && !isGoal) {
-                  if (isPlaceable) {
-                    placementBg = "rgba(16, 185, 129, 0.12)";
-                    borderWidth = 0.5;
-                    borderColor = "rgba(16, 185, 129, 0.35)";
-                  } else if (!isBlocked) {
-                    placementBg = "rgba(244, 63, 94, 0.1)";
-                    borderWidth = 0.5;
-                    borderColor = "rgba(244, 63, 94, 0.3)";
-                  }
-                }
-
-                // 선택된 타일 강조
-                if (isSelected) {
-                  placementBg = isPlaceable ? "rgba(16, 185, 129, 0.38)" : "rgba(244, 63, 94, 0.38)";
-                  borderWidth = 2;
-                  borderColor = isPlaceable ? "#10B981" : "#F43F5E";
-                }
-
-                return (
-                  <Pressable
-                    key={key}
-                    onPress={() => onSelectCell(row, col)}
-                    style={{
-                      width: tileSize,
-                      height: tileSize,
-                      backgroundColor: bg,
-                      zIndex: isSelected ? 10 : 1,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {/* 배치 모드 오버레이 */}
-                    {(inPlacementMode || isSelected) && (
-                      <View
-                        pointerEvents="none"
-                        style={{
-                          position: "absolute",
-                          top: 0, left: 0, right: 0, bottom: 0,
-                          backgroundColor: placementBg,
-                          borderWidth,
-                          borderColor,
-                        }}
-                      />
-                    )}
-
-                    {/* 경로 타일: 진입/목표 마커 */}
-                    {isStart && (
-                      <View
-                        pointerEvents="none"
-                        style={{
-                          position: "absolute",
-                          width: tileSize * 0.5,
-                          height: tileSize * 0.5,
-                          borderRadius: tileSize * 0.25,
-                          backgroundColor: "rgba(16, 185, 129, 0.6)",
-                          borderWidth: 1.5,
-                          borderColor: "#10B981",
-                        }}
-                      />
-                    )}
-                    {isGoal && (
-                      <View
-                        pointerEvents="none"
-                        style={{
-                          position: "absolute",
-                          width: tileSize * 0.48,
-                          height: tileSize * 0.48,
-                          borderRadius: 4,
-                          backgroundColor: "rgba(244, 63, 94, 0.65)",
-                          borderWidth: 1.5,
-                          borderColor: "#F43F5E",
-                        }}
-                      />
-                    )}
-
-                    {/* 장애물 타일: 바위 느낌 */}
-                    {isBlocked && (
-                      <View
-                        pointerEvents="none"
-                        style={{
-                          position: "absolute",
-                          width: tileSize * 0.72,
-                          height: tileSize * 0.72,
-                          borderRadius: 6,
-                          backgroundColor: "rgba(55, 45, 35, 0.9)",
-                          borderWidth: 1,
-                          borderColor: "rgba(100, 80, 60, 0.6)",
-                        }}
-                      >
-                        <View style={{
-                          position: "absolute",
-                          top: "20%", left: "15%",
-                          width: "35%", height: "18%",
-                          borderRadius: 3,
-                          backgroundColor: "rgba(120, 100, 80, 0.4)",
-                        }} />
-                        <View style={{
-                          position: "absolute",
-                          top: "55%", left: "40%",
-                          width: "28%", height: "14%",
-                          borderRadius: 2,
-                          backgroundColor: "rgba(120, 100, 80, 0.3)",
-                        }} />
-                      </View>
-                    )}
-
-                    {/* 설치된 타워 */}
-                    {tower && (
-                      <View
-                        style={{
-                          width: tileSize * 0.74,
-                          height: tileSize * 0.74,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Image
-                          source={getTowerImage(tower.type, tower.level)}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            transform: [{ rotate: `${towerAngles[key] ?? 0}deg` }],
-                          }}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    )}
-                  </Pressable>
-                );
-              })}
-            </View>
-          ))}
+          {tileRows}
 
           {/* 적군 렌더링 */}
           {enemies.map((enemy) => {

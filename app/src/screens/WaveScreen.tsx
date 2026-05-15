@@ -484,8 +484,10 @@ export function WaveScreen({
           }
         });
 
-        // 2-3. 타워 조준 각도 state 반영
-        setTowerAngles({ ...towerAnglesRef.current });
+        // 2-3. 타워 조준 각도 state 반영 (타워가 실제로 발사했을 때만 업데이트)
+        if (effectsToDraw.length > 0) {
+          setTowerAngles({ ...towerAnglesRef.current });
+        }
 
         // 2-4. 이펙트를 State로 보내기 (잠깐 띄웠다가 삭제)
         if (effectsToDraw.length > 0) {
