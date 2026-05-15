@@ -4,6 +4,21 @@
 
 ---
 
+## [2026-05-15] 렌더링 최적화 — 타일 useMemo + towerAngles 조건부 업데이트 (`62d1324`)
+
+### 상세 변경 사항 요약
+
+1. **GridMap 타일 그리드 memoization**
+   - 160개 타일 셀을 `React.useMemo`로 분리
+   - 적 이동 시 타일 리렌더 없음 → 타워 배치/발사/셀 선택 시에만 재계산
+
+2. **setTowerAngles 이벤트 기반으로 전환**
+   - 매 rAF 프레임마다 호출 → 타워가 실제 발사했을 때(`effectsToDraw.length > 0`)만 호출
+
+3. **onSelectCell ref 안정화** — stale closure 방지
+
+---
+
 ## [2026-05-15] 발사체 이미지 렌더링 적용 (`6de5c96`)
 
 ### 상세 변경 사항 요약
