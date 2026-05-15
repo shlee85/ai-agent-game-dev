@@ -137,9 +137,8 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
     setContainerSize({ width, height });
   };
 
-  const padding = 16;
-  const availableWidth = Math.max(0, containerSize.width - padding);
-  const availableHeight = Math.max(0, containerSize.height - padding);
+  const availableWidth = Math.max(0, containerSize.width);
+  const availableHeight = Math.max(0, containerSize.height);
 
   let tileSize = 0;
   if (availableWidth > 0 && availableHeight > 0) {
@@ -324,7 +323,7 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
 
   return (
     <View
-      className="flex-1 items-center justify-center rounded-xl border border-slate-700/50 bg-slate-900/40 p-2"
+      className="flex-1 items-center justify-center"
       onLayout={handleLayout}
     >
       {tileSize > 0 && (
