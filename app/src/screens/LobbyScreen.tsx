@@ -111,7 +111,7 @@ export function LobbyScreen({
           </Text>
         </TouchableOpacity>
         <View className="rounded-md border border-cyan-500/40 bg-slate-950/80 px-2 py-1">
-          <Text className="text-[10px] font-black tracking-wider text-cyan-400/90">v1.0</Text>
+          <Text className="text-[10px] font-black tracking-wider text-cyan-400/90">v1.1</Text>
         </View>
       </View>
 
