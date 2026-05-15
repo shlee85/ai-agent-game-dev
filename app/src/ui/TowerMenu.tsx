@@ -97,7 +97,7 @@ export function TowerMenu({ towerData, gold, onUpgrade, onSell, onClose }: Tower
           >
             <Text className="text-[10px] font-semibold text-rose-300 mb-0.5">{t.sell}</Text>
             <View className="flex-row items-center">
-              <FontAwesome5 name="coins" size={8} color="#34D399" className="mr-0.5" />
+              <FontAwesome5 name="coins" size={8} color="#34D399" style={{ marginRight: 2 }} />
               <Text className="text-[10px] font-bold text-emerald-400">+{refundAmount}</Text>
             </View>
           </Pressable>
@@ -120,7 +120,7 @@ export function TowerMenu({ towerData, gold, onUpgrade, onSell, onClose }: Tower
             <Text className="text-[10px] font-semibold text-amber-200 mb-0.5">{isMaxLevel ? t.max : t.upgrade}</Text>
             {!isMaxLevel && (
               <View className="flex-row items-center">
-                <FontAwesome5 name="coins" size={8} color={canAffordUpgrade ? "#FBBF24" : "#F87171"} className="mr-0.5" />
+                <FontAwesome5 name="coins" size={8} color={canAffordUpgrade ? "#FBBF24" : "#F87171"} style={{ marginRight: 2 }} />
                 <Text className={`text-[10px] font-bold ${canAffordUpgrade ? "text-yellow-400" : "text-red-400"}`}>
                   -{currentUpgradeCost}
                 </Text>

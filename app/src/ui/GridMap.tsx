@@ -302,15 +302,22 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
                     justifyContent: "center",
                   }}
                 >
-                  <Image
-                    source={getTowerImage(tower.type, tower.level)}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      transform: [{ rotate: `${towerAngles[key] ?? 0}deg` }],
-                    }}
-                    resizeMode="contain"
-                  />
+                  {(() => {
+                    const stored = towerAngles[key] ?? 0;
+                    const deg = Math.abs(stored);
+                    const flipX = stored < 0 ? -1 : 1;
+                    return (
+                      <Image
+                        source={getTowerImage(tower.type, tower.level)}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          transform: [{ rotate: `${deg}deg` }, { scaleX: flipX }],
+                        }}
+                        resizeMode="contain"
+                      />
+                    );
+                  })()}
                 </View>
               )}
             </Pressable>

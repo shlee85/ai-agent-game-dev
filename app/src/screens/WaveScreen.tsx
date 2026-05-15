@@ -398,8 +398,13 @@ export function WaveScreen({
             const towerRow = Number(towerRowStr);
             const towerCol = Number(towerColStr);
 
-            // 타워 조준 각도 업데이트 (이미지 기본 방향: 위쪽 → +90° 보정)
-            towerAnglesRef.current[towerKey] = Math.atan2(eRow - towerRow, eCol - towerCol) * (180 / Math.PI) + 90;
+            // 타워 조준 각도 — 항상 위쪽이 위, 좌우는 scaleX 반전
+            // normalized: 0°(위) ~ 180°(아래), 음수면 좌측 반전 필요
+            {
+              const raw = Math.atan2(eRow - towerRow, eCol - towerCol) * (180 / Math.PI) + 90;
+              const norm = ((raw % 360) + 360) % 360;
+              towerAnglesRef.current[towerKey] = norm <= 180 ? norm : -(360 - norm);
+            }
 
             // 발사체 생성
             const projDuration = towerStats.attackType === "aoe" ? 240 : towerStats.attackType === "slow" ? 280 : 160;

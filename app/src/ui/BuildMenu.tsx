@@ -51,7 +51,7 @@ export function BuildMenu({ gold, onBuild, onClose }: BuildMenuProps) {
                   </Text>
                 )}
                 <View className="flex-row items-center mt-1">
-                  <FontAwesome5 name="coins" size={8} color={canAfford ? "#FBBF24" : "#F87171"} className="mr-1" />
+                  <FontAwesome5 name="coins" size={8} color={canAfford ? "#FBBF24" : "#F87171"} style={{ marginRight: 4 }} />
                   <Text className={`text-xs font-bold ${canAfford ? "text-yellow-400" : "text-red-400"}`}>
                     {tower.cost}
                   </Text>

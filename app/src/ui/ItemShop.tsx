@@ -48,7 +48,7 @@ export function ItemShop({ inventory, onUseItem, activeItemType }: ItemShopProps
             
             {/* 보유 수량 표시 */}
             <View className="absolute bottom-[-6px] bg-slate-900 px-1.5 py-0.5 rounded-full border border-slate-700 flex-row items-center justify-center">
-              <FontAwesome5 name="boxes" size={8} color={canUse ? "#67E8F9" : "#F87171"} className="mr-0.5" />
+              <FontAwesome5 name="boxes" size={8} color={canUse ? "#67E8F9" : "#F87171"} style={{ marginRight: 2 }} />
               <Text className={`text-[9px] font-bold ${canUse ? "text-cyan-300" : "text-red-400"}`}>
                 {count}
               </Text>

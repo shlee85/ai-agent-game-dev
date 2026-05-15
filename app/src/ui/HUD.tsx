@@ -25,15 +25,15 @@ export function HUD({ gold, diamond, heart, waveId, speedMultiplier, onToggleSpe
   return (
     <View className="flex-row items-center gap-4 rounded-full border border-slate-700/50 bg-slate-900/80 px-5 py-2 shadow-sm" pointerEvents="auto">
       <View className="flex-row items-center">
-        <FontAwesome5 name="coins" size={12} color="#FBBF24" className="mr-1" />
+        <FontAwesome5 name="coins" size={12} color="#FBBF24" style={{ marginRight: 4 }} />
         <Text className="font-bold text-yellow-400">{gold}</Text>
       </View>
       <View className="flex-row items-center">
-        <FontAwesome5 name="gem" size={12} color="#67E8F9" className="mr-1" />
+        <FontAwesome5 name="gem" size={12} color="#67E8F9" style={{ marginRight: 4 }} />
         <Text className="font-bold text-cyan-300">{diamond}</Text>
       </View>
       <View className="flex-row items-center">
-        <Ionicons name="heart" size={14} color="#FB7185" className="mr-1" />
+        <Ionicons name="heart" size={14} color="#FB7185" style={{ marginRight: 4 }} />
         <Text className="font-bold text-rose-400">{heart}</Text>
       </View>
       <Text className="font-bold text-blue-400 ml-2">{t.waveLabel} {waveId}</Text>
