@@ -4,6 +4,22 @@
 
 ---
 
+## [2026-05-15] 발사체 이미지 렌더링 적용 (`6de5c96`)
+
+### 상세 변경 사항 요약
+
+1. **발사체 dot → 이미지 전환**
+   - Pulse Lancer: `proj_sniper.png` (시안 레이저 볼트, 가로형)
+   - Nova Cannon: `proj_cannon.png` (주황 플라즈마 화염구)
+   - Cryo Field: `proj_cryo.png` (파란 얼음 결정)
+   - Volt Striker: `proj_volt.png` (노란 번개 볼트)
+
+2. **회전 적용** — atan2(dy, dx)로 발사 방향 각도 계산 → `transform rotate`
+
+3. **신규 파일** — `app/src/data/projectileAssets.ts`
+
+---
+
 ## [2026-05-14] GPT 이미지 전면 교체 + Wave 배경 시스템 + 격자 UI 개선 (`201852d`)
 
 ### 상세 변경 사항 요약
