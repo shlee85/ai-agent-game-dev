@@ -1,8 +1,8 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, Image } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { TOWER_CONFIG } from "../data/towers";
-import { getTowerRoleTag } from "../data/visualTheme";
+import { getTowerImage } from "../data/towerAssets";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface BuildMenuProps {
@@ -33,17 +33,16 @@ export function BuildMenu({ gold, onBuild, onClose }: BuildMenuProps) {
                   canAfford ? "border-slate-600 bg-slate-800 active:bg-slate-700" : "border-slate-800 bg-slate-900 opacity-50"
                 }`}
               >
-                <View
-                  style={{ backgroundColor: tower.color }}
-                  className="mb-2 h-8 w-8 items-center justify-center rounded-full border border-slate-500"
-                >
-                  <Text className="text-[9px] font-black text-slate-950">{getTowerRoleTag(tower.id)}</Text>
-                </View>
+                <Image
+                  source={getTowerImage(tower.id, 1)}
+                  style={{ width: 48, height: 48, marginBottom: 4 }}
+                  resizeMode="contain"
+                />
                 <Text className="text-xs font-semibold text-slate-300 text-center" numberOfLines={1}>
                   {t.towerName[tower.id] ?? tower.name}
                 </Text>
                 <Text className="text-[9px] font-black tracking-wider text-cyan-300/90">
-                  {getTowerRoleTag(tower.id)} | {t.roleLabel[tower.id] ?? tower.id}
+                  {t.roleLabel[tower.id] ?? tower.id}
                 </Text>
                 {tower.affinityEnemyType && (
                   <Text className="text-[8px] font-bold text-yellow-400/90 mt-0.5">
