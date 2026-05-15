@@ -9,7 +9,7 @@ import { STAGE_CONFIG } from "../data/stages";
 import { WAVE_CONFIG, WaveId } from "../data/waves";
 import { TOWER_CONFIG } from "../data/towers";
 import { ENEMY_CONFIG, EnemyType } from "../data/enemies";
-import { ITEM_CONFIG, ItemStats } from "../data/items";
+import { ItemStats } from "../data/items";
 import { GridMap, EnemyData, AttackEffect, FloatingTextData, ProjectileData } from "../ui/GridMap";
 import { HUD } from "../ui/HUD";
 import { BuildMenu, TOWER_OPTIONS } from "../ui/BuildMenu";
@@ -926,8 +926,7 @@ export function WaveScreen({
       {waveId === 20 && gameState === "wave_clear" && (
         <View className="absolute inset-0 z-50 items-center justify-center bg-amber-950/80" style={{ elevation: 100 }}>
           <Animated.View
-            style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [60, 0] }) }], opacity: popupAnim, backgroundColor: "#0F0A00", borderWidth: 2, borderColor: "#F59E0B", minWidth: 320 }}
-            className="items-center rounded-2xl p-8 shadow-2xl"
+            style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [60, 0] }) }], opacity: popupAnim, backgroundColor: "#0F0A00", borderWidth: 2, borderColor: "#F59E0B", minWidth: 320, alignItems: "center", borderRadius: 16, padding: 32 }}
           >
             {/* 골든 별 장식 */}
             <View className="flex-row gap-2 mb-3">
@@ -976,8 +975,7 @@ export function WaveScreen({
       {(gameState === "game_over" || (gameState === "wave_clear" && waveId !== 20)) && (
         <View className="absolute inset-0 z-50 items-center justify-center bg-slate-950/80" style={{ elevation: 100 }}>
           <Animated.View
-            style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }], opacity: popupAnim }}
-            className="items-center rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl"
+            style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }], opacity: popupAnim, alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: "#334155", backgroundColor: "#0F172A", padding: 32 }}
           >
             {/* 등급 배지 */}
             {(() => {
@@ -1062,8 +1060,7 @@ export function WaveScreen({
       {tutorialStepIdx !== null && (
         <View className="absolute inset-0 z-[200] items-center justify-center bg-slate-950/85" style={{ elevation: 200 }}>
           <Animated.View
-            style={{ transform: [{ scale: tutorialAnim }], opacity: tutorialAnim, maxWidth: 340 }}
-            className="w-11/12 rounded-2xl border border-cyan-700 bg-slate-900 p-7"
+            style={{ transform: [{ scale: tutorialAnim }], opacity: tutorialAnim, maxWidth: 340, width: "91.6%", borderRadius: 16, borderWidth: 1, borderColor: "#0E7490", backgroundColor: "#0F172A", padding: 28 }}
           >
             {/* 진행 도트 */}
             <View className="flex-row justify-center gap-2 mb-4">
@@ -1114,9 +1111,8 @@ export function WaveScreen({
       {/* 일시정지(메뉴) 팝업 오버레이 */}
       {gameState === "paused" && (
         <View className="absolute inset-0 z-50 items-center justify-center bg-slate-950/80" style={{ elevation: 100 }}>
-          <Animated.View 
-            style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }], opacity: popupAnim }}
-            className="w-80 items-center rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-2xl"
+          <Animated.View
+            style={{ transform: [{ scale: popupAnim }, { translateY: popupAnim.interpolate({ inputRange: [0, 1], outputRange: [50, 0] }) }], opacity: popupAnim, width: 320, alignItems: "center", borderRadius: 16, borderWidth: 1, borderColor: "#334155", backgroundColor: "#0F172A", padding: 32 }}
           >
             <Text className="text-3xl font-black text-slate-200">{t.pauseTitle}</Text>
             <Text className="mt-2 text-slate-400 text-sm">{t.pauseDesc}</Text>

@@ -1,4 +1,5 @@
-import { Audio } from "expo-av";
+import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
+import type { AudioPlayer } from "expo-audio";
 
 type SoundKey =
   | "sfx_attack_sniper"
@@ -28,16 +29,15 @@ const SOUND_ASSETS: Record<SoundKey, ReturnType<typeof require>> = {
 };
 
 class SoundManager {
-  private sfxCache: Partial<Record<SoundKey, Audio.Sound>> = {};
-  private bgmSound: Audio.Sound | null = null;
+  private sfxCache: Partial<Record<SoundKey, AudioPlayer>> = {};
+  private bgmPlayer: AudioPlayer | null = null;
   private currentBgmKey: SoundKey | null = null;
   private sfxCooldowns: Partial<Record<SoundKey, number>> = {};
 
   async init() {
-    await Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      playsInSilentModeIOS: true,
-      staysActiveInBackground: false,
+    await setAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: false,
     });
   }
 
@@ -49,57 +49,52 @@ class SoundManager {
     this.sfxCooldowns[key] = now;
 
     try {
-      let sound = this.sfxCache[key];
-      if (!sound) {
-        const { sound: loaded } = await Audio.Sound.createAsync(SOUND_ASSETS[key], {
-          volume,
-          shouldPlay: false,
-        });
-        this.sfxCache[key] = loaded;
-        sound = loaded;
+      let player = this.sfxCache[key];
+      if (!player) {
+        player = createAudioPlayer(SOUND_ASSETS[key]);
+        this.sfxCache[key] = player;
       }
-      await sound.setPositionAsync(0);
-      await sound.setVolumeAsync(volume);
-      await sound.playAsync();
+      await player.seekTo(0);
+      player.volume = volume;
+      player.play();
     } catch (_) {}
   }
 
   // BGM: 루핑 재생
   async playBgm(key: SoundKey, volume = 0.4) {
     if (this.currentBgmKey === key) return;
-    await this.stopBgm();
+    this.stopBgm();
     try {
-      const { sound } = await Audio.Sound.createAsync(SOUND_ASSETS[key], {
-        isLooping: true,
-        volume,
-        shouldPlay: true,
-      });
-      this.bgmSound = sound;
+      const player = createAudioPlayer(SOUND_ASSETS[key]);
+      player.loop = true;
+      player.volume = volume;
+      player.play();
+      this.bgmPlayer = player;
       this.currentBgmKey = key;
     } catch (_) {}
   }
 
-  async stopBgm() {
-    if (this.bgmSound) {
+  stopBgm() {
+    if (this.bgmPlayer) {
       try {
-        await this.bgmSound.stopAsync();
-        await this.bgmSound.unloadAsync();
+        this.bgmPlayer.pause();
+        this.bgmPlayer.remove();
       } catch (_) {}
-      this.bgmSound = null;
+      this.bgmPlayer = null;
       this.currentBgmKey = null;
     }
   }
 
-  async setBgmVolume(volume: number) {
+  setBgmVolume(volume: number) {
     try {
-      await this.bgmSound?.setVolumeAsync(volume);
+      if (this.bgmPlayer) this.bgmPlayer.volume = volume;
     } catch (_) {}
   }
 
   // 화면 전환 시 SFX 캐시 해제
-  async unloadSfx() {
-    for (const sound of Object.values(this.sfxCache)) {
-      try { await sound?.unloadAsync(); } catch (_) {}
+  unloadSfx() {
+    for (const player of Object.values(this.sfxCache)) {
+      try { player?.remove(); } catch (_) {}
     }
     this.sfxCache = {};
     this.sfxCooldowns = {};
