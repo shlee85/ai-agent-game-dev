@@ -403,6 +403,7 @@ export function WaveScreen({
 
             // 발사체 생성
             const projDuration = towerStats.attackType === "aoe" ? 240 : towerStats.attackType === "slow" ? 280 : 160;
+            const projAngle = Math.atan2(eRow - towerRow, eCol - towerCol) * (180 / Math.PI);
             const projId = `proj-${Date.now()}-${Math.random()}`;
             setProjectiles((prev) => [...prev, {
               id: projId,
@@ -414,6 +415,7 @@ export function WaveScreen({
               duration: projDuration,
               color: towerStats.color,
               towerType: towerData.type,
+              angle: projAngle,
             }]);
             setTimeout(() => setProjectiles((prev) => prev.filter((p) => p.id !== projId)), projDuration + 50);
 

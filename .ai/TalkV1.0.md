@@ -1057,3 +1057,18 @@ Python PIL로 합성 이미지에서 4종 분리 완료.
 | `proj_volt.png` | 298×117 | Volt Striker — 노란 번개 볼트 |
 
 다음 단계: 이 이미지들을 `ProjectileData`에 연결해서 실제 발사체로 적용.
+
+## 질문: 그럼 이팩트 적용해줘. 
+[CLAUDE 답변]
+
+발사체 이미지 렌더링 적용 완료.
+
+**변경 파일:**
+- `app/src/data/projectileAssets.ts` (신규) — 4종 이미지 매핑
+- `app/src/ui/GridMap.tsx` — `ProjectileData`에 `angle: number` 필드 추가, 발사체 렌더링을 dot → `<Image>` + 회전으로 교체
+- `app/src/screens/WaveScreen.tsx` — 발사체 생성 시 `projAngle` 계산 후 전달
+
+**핵심 구현:**
+- 각도 계산: `Math.atan2(eRow - towerRow, eCol - towerCol) * (180 / Math.PI)` (이미지 기본 방향: 오른쪽)
+- 타입별 표시 크기 (tileSize 기준): sniper 1.0×0.22 / aoe 0.5×0.36 / slow 0.45×0.41 / chain 0.8×0.3
+- 비행 진행도에 따라 opacity 0.7 → 1.0으로 페이드아웃

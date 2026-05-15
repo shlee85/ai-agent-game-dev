@@ -5,6 +5,7 @@ import { StageConfig } from "../data/stages";
 import { ENEMY_ASSETS } from "../data/enemyAssets";
 import { getTowerImage } from "../data/towerAssets";
 import { getEnemyThreatTag } from "../data/visualTheme";
+import { PROJECTILE_ASSETS } from "../data/projectileAssets";
 
 interface TowerData {
   type: string;
@@ -22,6 +23,7 @@ export interface ProjectileData {
   duration: number;
   color: string;
   towerType: string;
+  angle: number;
 }
 
 export interface AttackEffect {
@@ -442,29 +444,38 @@ export function GridMap({ stage, selectedCell, towers, enemies = [], attackEffec
             const progress = Math.min(1, (now - proj.spawnTime) / proj.duration);
             const curRow = proj.startRow + (proj.endRow - proj.startRow) * progress;
             const curCol = proj.startCol + (proj.endCol - proj.startCol) * progress;
-            const isAoe = proj.towerType === "aoe";
-            const dotSize = isAoe ? tileSize * 0.22 : tileSize * 0.14;
             const opacity = 1 - progress * 0.3;
+
+            let imgW: number, imgH: number;
+            switch (proj.towerType) {
+              case "sniper": imgW = tileSize * 1.0; imgH = tileSize * 0.22; break;
+              case "aoe":    imgW = tileSize * 0.5; imgH = tileSize * 0.36; break;
+              case "slow":   imgW = tileSize * 0.45; imgH = tileSize * 0.41; break;
+              case "chain":  imgW = tileSize * 0.8; imgH = tileSize * 0.3; break;
+              default:       imgW = tileSize * 0.3; imgH = tileSize * 0.3;
+            }
+
             return (
               <View
                 key={proj.id}
                 pointerEvents="none"
                 style={{
                   position: "absolute",
-                  top: curRow * tileSize + tileSize / 2 - dotSize / 2,
-                  left: curCol * tileSize + tileSize / 2 - dotSize / 2,
-                  width: dotSize,
-                  height: dotSize,
-                  borderRadius: 999,
-                  backgroundColor: proj.color,
+                  top: curRow * tileSize + tileSize / 2 - imgH / 2,
+                  left: curCol * tileSize + tileSize / 2 - imgW / 2,
+                  width: imgW,
+                  height: imgH,
+                  transform: [{ rotate: `${proj.angle}deg` }],
                   opacity,
                   zIndex: 25,
-                  shadowColor: proj.color,
-                  shadowOpacity: 0.9,
-                  shadowRadius: 4,
-                  elevation: 4,
                 }}
-              />
+              >
+                <Image
+                  source={PROJECTILE_ASSETS[proj.towerType] ?? PROJECTILE_ASSETS.sniper}
+                  style={{ width: "100%", height: "100%" }}
+                  resizeMode="contain"
+                />
+              </View>
             );
           })}
 
